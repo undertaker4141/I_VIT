@@ -1,0 +1,3430 @@
+{
+  "qact_input": {
+    "shape": [
+      1,
+      3,
+      224,
+      224
+    ],
+    "dtype_float": "float32",
+    "min_float": -2.126966953277588,
+    "max_float": 2.6225709915161133,
+    "dtype_int": "int8",
+    "min_int": -103,
+    "max_int": 127
+  },
+  "patch_embed_proj": {
+    "shape": [
+      1,
+      192,
+      14,
+      14
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.255997180938721,
+    "max_float": 7.159373760223389,
+    "dtype_int": "int32",
+    "min_int": -1209508,
+    "max_int": 1087638
+  },
+  "patch_embed_qact": {
+    "shape": [
+      1,
+      196,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.255903244018555,
+    "max_float": 7.159373760223389,
+    "dtype_int": "int32",
+    "min_int": -28632,
+    "max_int": 32767
+  },
+  "qact_pos": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.544304847717285,
+    "max_float": 6.882198333740234,
+    "dtype_int": "int32",
+    "min_int": -21636,
+    "max_int": 32767
+  },
+  "qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.688564300537109,
+    "max_float": 13.811708450317383,
+    "dtype_int": "int32",
+    "min_int": -15868,
+    "max_int": 32767
+  },
+  "blocks_0_norm1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.36045503616333,
+    "max_float": 10.444811820983887,
+    "dtype_int": "int32",
+    "min_int": -364643424,
+    "max_int": 839198336
+  },
+  "blocks_0_qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.358858585357666,
+    "max_float": 10.444811820983887,
+    "dtype_int": "int8",
+    "min_int": -53,
+    "max_int": 127
+  },
+  "blocks_0_attn_qkv": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.869657039642334,
+    "max_float": 7.802652359008789,
+    "dtype_int": "int32",
+    "min_int": -58182,
+    "max_int": 59150
+  },
+  "blocks_0_attn_qact1": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.881078720092773,
+    "max_float": 7.802651882171631,
+    "dtype_int": "int8",
+    "min_int": -112,
+    "max_int": 127
+  },
+  "blocks_0_attn_matmul_1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -73.56797790527344,
+    "max_float": 77.51626586914062,
+    "dtype_int": "int32",
+    "min_int": -19490,
+    "max_int": 20536
+  },
+  "blocks_0_attn_qact_attn1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -9.231761932373047,
+    "max_float": 9.689535140991211,
+    "dtype_int": "int8",
+    "min_int": -121,
+    "max_int": 127
+  },
+  "blocks_0_attn_int_softmax": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": 0.0,
+    "max_float": 0.962158203125,
+    "dtype_int": "int32",
+    "min_int": 0,
+    "max_int": 31528
+  },
+  "blocks_0_attn_matmul_2": {
+    "shape": [
+      1,
+      3,
+      197,
+      64
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.706144094467163,
+    "max_float": 3.6309494972229004,
+    "dtype_int": "int32",
+    "min_int": -1976668,
+    "max_int": 1936563
+  },
+  "blocks_0_attn_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.706144332885742,
+    "max_float": 3.6185975074768066,
+    "dtype_int": "int8",
+    "min_int": -127,
+    "max_int": 124
+  },
+  "blocks_0_attn_proj": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.781139612197876,
+    "max_float": 3.1919140815734863,
+    "dtype_int": "int32",
+    "min_int": -70145,
+    "max_int": 73736
+  },
+  "blocks_0_attn_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.781139373779297,
+    "max_float": 3.1919338703155518,
+    "dtype_int": "int32",
+    "min_int": -32767,
+    "max_int": 27661
+  },
+  "blocks_0_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.52139139175415,
+    "max_float": 14.590276718139648,
+    "dtype_int": "int32",
+    "min_int": -12400,
+    "max_int": 32767
+  },
+  "blocks_0_norm2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.974867343902588,
+    "max_float": 12.49820613861084,
+    "dtype_int": "int32",
+    "min_int": -2147483648,
+    "max_int": 1060195392
+  },
+  "blocks_0_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.987185955047607,
+    "max_float": 12.49820613861084,
+    "dtype_int": "int8",
+    "min_int": -71,
+    "max_int": 127
+  },
+  "blocks_0_mlp_fc1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.898592948913574,
+    "max_float": 7.277098178863525,
+    "dtype_int": "int32",
+    "min_int": -76339,
+    "max_int": 62443
+  },
+  "blocks_0_mlp_qact_gelu": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.898592948913574,
+    "max_float": 7.287036418914795,
+    "dtype_int": "int8",
+    "min_int": -127,
+    "max_int": 104
+  },
+  "blocks_0_mlp_act": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.1866646260023117,
+    "max_float": 7.1731767654418945,
+    "dtype_int": "int32",
+    "min_int": -341,
+    "max_int": 13104
+  },
+  "blocks_0_mlp_qact1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.16944512724876404,
+    "max_float": 7.1731767654418945,
+    "dtype_int": "int8",
+    "min_int": -3,
+    "max_int": 127
+  },
+  "blocks_0_mlp_fc2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.091475009918213,
+    "max_float": 3.3651058673858643,
+    "dtype_int": "int32",
+    "min_int": -54526,
+    "max_int": 52251
+  },
+  "blocks_0_mlp_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.091475009918213,
+    "max_float": 3.365131139755249,
+    "dtype_int": "int32",
+    "min_int": -32767,
+    "max_int": 26950
+  },
+  "blocks_0_qact4": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.549138069152832,
+    "max_float": 14.939026832580566,
+    "dtype_int": "int32",
+    "min_int": -9978,
+    "max_int": 32767
+  },
+  "blocks_1_norm1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.740830421447754,
+    "max_float": 6.2259697914123535,
+    "dtype_int": "int32",
+    "min_int": -339047264,
+    "max_int": 684662016
+  },
+  "blocks_1_qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.735735893249512,
+    "max_float": 6.2259697914123535,
+    "dtype_int": "int8",
+    "min_int": -117,
+    "max_int": 127
+  },
+  "blocks_1_attn_qkv": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.654792308807373,
+    "max_float": 5.692605495452881,
+    "dtype_int": "int32",
+    "min_int": -69238,
+    "max_int": 84375
+  },
+  "blocks_1_attn_qact1": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.647781848907471,
+    "max_float": 5.692605495452881,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 127
+  },
+  "blocks_1_attn_matmul_1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -204.39797973632812,
+    "max_float": 201.64944458007812,
+    "dtype_int": "int32",
+    "min_int": -101733,
+    "max_int": 100365
+  },
+  "blocks_1_attn_qact_attn1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -25.549747467041016,
+    "max_float": 25.147390365600586,
+    "dtype_int": "int8",
+    "min_int": -127,
+    "max_int": 125
+  },
+  "blocks_1_attn_int_softmax": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": 0.0,
+    "max_float": 0.923980712890625,
+    "dtype_int": "int32",
+    "min_int": 0,
+    "max_int": 30277
+  },
+  "blocks_1_attn_matmul_2": {
+    "shape": [
+      1,
+      3,
+      197,
+      64
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.1630189418792725,
+    "max_float": 3.2744078636169434,
+    "dtype_int": "int32",
+    "min_int": -2312301,
+    "max_int": 2393731
+  },
+  "blocks_1_attn_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.1712770462036133,
+    "max_float": 3.2744078636169434,
+    "dtype_int": "int8",
+    "min_int": -123,
+    "max_int": 127
+  },
+  "blocks_1_attn_proj": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.9959502220153809,
+    "max_float": 2.143815279006958,
+    "dtype_int": "int32",
+    "min_int": -80668,
+    "max_int": 78999
+  },
+  "blocks_1_attn_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.9959523677825928,
+    "max_float": 2.143815279006958,
+    "dtype_int": "int32",
+    "min_int": -30507,
+    "max_int": 32767
+  },
+  "blocks_1_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.670363426208496,
+    "max_float": 14.197402954101562,
+    "dtype_int": "int32",
+    "min_int": -10779,
+    "max_int": 32767
+  },
+  "blocks_1_norm2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.336916446685791,
+    "max_float": 6.015749931335449,
+    "dtype_int": "int32",
+    "min_int": -605419776,
+    "max_int": 808530496
+  },
+  "blocks_1_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.352492809295654,
+    "max_float": 6.015633583068848,
+    "dtype_int": "int8",
+    "min_int": -113,
+    "max_int": 127
+  },
+  "blocks_1_mlp_fc1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.798300743103027,
+    "max_float": 3.229590892791748,
+    "dtype_int": "int32",
+    "min_int": -116652,
+    "max_int": 69666
+  },
+  "blocks_1_mlp_qact_gelu": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.798295021057129,
+    "max_float": 3.2415664196014404,
+    "dtype_int": "int8",
+    "min_int": -127,
+    "max_int": 71
+  },
+  "blocks_1_mlp_act": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.17334961891174316,
+    "max_float": 3.114942789077759,
+    "dtype_int": "int32",
+    "min_int": -486,
+    "max_int": 8733
+  },
+  "blocks_1_mlp_qact1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.17168974876403809,
+    "max_float": 3.1149425506591797,
+    "dtype_int": "int8",
+    "min_int": -7,
+    "max_int": 127
+  },
+  "blocks_1_mlp_fc2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.625411868095398,
+    "max_float": 1.5836187601089478,
+    "dtype_int": "int32",
+    "min_int": -44196,
+    "max_int": 47530
+  },
+  "blocks_1_mlp_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.625411868095398,
+    "max_float": 1.5835946798324585,
+    "dtype_int": "int32",
+    "min_int": -32767,
+    "max_int": 31924
+  },
+  "blocks_1_qact4": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.534468173980713,
+    "max_float": 12.65030574798584,
+    "dtype_int": "int32",
+    "min_int": -9150,
+    "max_int": 32749
+  },
+  "blocks_2_norm1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.227795600891113,
+    "max_float": 7.803269386291504,
+    "dtype_int": "int32",
+    "min_int": -462325248,
+    "max_int": 701608832
+  },
+  "blocks_2_qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.23553466796875,
+    "max_float": 7.787397861480713,
+    "dtype_int": "int8",
+    "min_int": -118,
+    "max_int": 127
+  },
+  "blocks_2_attn_qkv": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.7497334480285645,
+    "max_float": 6.190555572509766,
+    "dtype_int": "int32",
+    "min_int": -59687,
+    "max_int": 73934
+  },
+  "blocks_2_attn_qact1": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.769824981689453,
+    "max_float": 6.188043117523193,
+    "dtype_int": "int8",
+    "min_int": -128,
+    "max_int": 117
+  },
+  "blocks_2_attn_matmul_1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -190.9558868408203,
+    "max_float": 156.27809143066406,
+    "dtype_int": "int32",
+    "min_int": -68265,
+    "max_int": 55868
+  },
+  "blocks_2_attn_qact_attn1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -23.801719665527344,
+    "max_float": 19.491172790527344,
+    "dtype_int": "int8",
+    "min_int": -127,
+    "max_int": 104
+  },
+  "blocks_2_attn_int_softmax": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": 0.0,
+    "max_float": 0.7928466796875,
+    "dtype_int": "int32",
+    "min_int": 0,
+    "max_int": 25980
+  },
+  "blocks_2_attn_matmul_2": {
+    "shape": [
+      1,
+      3,
+      197,
+      64
+    ],
+    "dtype_float": "float32",
+    "min_float": -2.0943503379821777,
+    "max_float": 2.1118111610412598,
+    "dtype_int": "int32",
+    "min_int": -1297573,
+    "max_int": 1308391
+  },
+  "blocks_2_attn_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -2.088941812515259,
+    "max_float": 2.105520725250244,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 127
+  },
+  "blocks_2_attn_proj": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.4238344430923462,
+    "max_float": 1.2871849536895752,
+    "dtype_int": "int32",
+    "min_int": -72157,
+    "max_int": 73543
+  },
+  "blocks_2_attn_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.4238287210464478,
+    "max_float": 1.2871997356414795,
+    "dtype_int": "int32",
+    "min_int": -32639,
+    "max_int": 29507
+  },
+  "blocks_2_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.106242656707764,
+    "max_float": 12.777706146240234,
+    "dtype_int": "int32",
+    "min_int": -10530,
+    "max_int": 32767
+  },
+  "blocks_2_norm2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.698630332946777,
+    "max_float": 5.239168643951416,
+    "dtype_int": "int32",
+    "min_int": -565283968,
+    "max_int": 778057472
+  },
+  "blocks_2_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.699954032897949,
+    "max_float": 5.2359137535095215,
+    "dtype_int": "int8",
+    "min_int": -114,
+    "max_int": 127
+  },
+  "blocks_2_mlp_fc1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.759737491607666,
+    "max_float": 2.479454517364502,
+    "dtype_int": "int32",
+    "min_int": -104312,
+    "max_int": 61735
+  },
+  "blocks_2_mlp_qact_gelu": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.764691352844238,
+    "max_float": 2.5034682750701904,
+    "dtype_int": "int8",
+    "min_int": -127,
+    "max_int": 47
+  },
+  "blocks_2_mlp_act": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.18726076185703278,
+    "max_float": 2.347001314163208,
+    "dtype_int": "int32",
+    "min_int": -450,
+    "max_int": 5640
+  },
+  "blocks_2_mlp_qact1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.18481004238128662,
+    "max_float": 2.3470876216888428,
+    "dtype_int": "int8",
+    "min_int": -10,
+    "max_int": 127
+  },
+  "blocks_2_mlp_fc2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.219396948814392,
+    "max_float": 1.234580397605896,
+    "dtype_int": "int32",
+    "min_int": -54881,
+    "max_int": 56164
+  },
+  "blocks_2_mlp_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.2194160223007202,
+    "max_float": 1.234588384628296,
+    "dtype_int": "int32",
+    "min_int": -32068,
+    "max_int": 32467
+  },
+  "blocks_2_qact4": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.283198595046997,
+    "max_float": 11.56342887878418,
+    "dtype_int": "int32",
+    "min_int": -9295,
+    "max_int": 32737
+  },
+  "blocks_3_norm1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.240983963012695,
+    "max_float": 6.7865214347839355,
+    "dtype_int": "int32",
+    "min_int": -478258080,
+    "max_int": 719365248
+  },
+  "blocks_3_qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.245611667633057,
+    "max_float": 6.779424667358398,
+    "dtype_int": "int8",
+    "min_int": -117,
+    "max_int": 127
+  },
+  "blocks_3_attn_qkv": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.409655570983887,
+    "max_float": 4.520893096923828,
+    "dtype_int": "int32",
+    "min_int": -77006,
+    "max_int": 75405
+  },
+  "blocks_3_attn_qact1": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.409600257873535,
+    "max_float": 4.517151355743408,
+    "dtype_int": "int8",
+    "min_int": -123,
+    "max_int": 126
+  },
+  "blocks_3_attn_matmul_1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -77.35545349121094,
+    "max_float": 89.80311584472656,
+    "dtype_int": "int32",
+    "min_int": -60187,
+    "max_int": 69872
+  },
+  "blocks_3_attn_qact_attn1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -9.70292854309082,
+    "max_float": 11.216229438781738,
+    "dtype_int": "int8",
+    "min_int": -109,
+    "max_int": 126
+  },
+  "blocks_3_attn_int_softmax": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": 0.0,
+    "max_float": 0.5841064453125,
+    "dtype_int": "int32",
+    "min_int": 0,
+    "max_int": 19140
+  },
+  "blocks_3_attn_matmul_2": {
+    "shape": [
+      1,
+      3,
+      197,
+      64
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.4278665781021118,
+    "max_float": 1.573206901550293,
+    "dtype_int": "int32",
+    "min_int": -1305099,
+    "max_int": 1437943
+  },
+  "blocks_3_attn_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.4304282665252686,
+    "max_float": 1.5672518014907837,
+    "dtype_int": "int8",
+    "min_int": -115,
+    "max_int": 126
+  },
+  "blocks_3_attn_proj": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.1962050199508667,
+    "max_float": 0.8576335906982422,
+    "dtype_int": "int32",
+    "min_int": -73664,
+    "max_int": 77287
+  },
+  "blocks_3_attn_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.188971996307373,
+    "max_float": 0.8576215505599976,
+    "dtype_int": "int32",
+    "min_int": -32768,
+    "max_int": 23636
+  },
+  "blocks_3_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.65623140335083,
+    "max_float": 11.853384017944336,
+    "dtype_int": "int32",
+    "min_int": -10084,
+    "max_int": 32692
+  },
+  "blocks_3_norm2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.902817726135254,
+    "max_float": 7.309216499328613,
+    "dtype_int": "int32",
+    "min_int": -526333472,
+    "max_int": 822080448
+  },
+  "blocks_3_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.90593147277832,
+    "max_float": 7.308777332305908,
+    "dtype_int": "int8",
+    "min_int": -120,
+    "max_int": 127
+  },
+  "blocks_3_mlp_fc1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.036118984222412,
+    "max_float": 2.583759069442749,
+    "dtype_int": "int32",
+    "min_int": -69974,
+    "max_int": 46458
+  },
+  "blocks_3_mlp_qact_gelu": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.012780666351318,
+    "max_float": 2.5769059658050537,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 54
+  },
+  "blocks_3_mlp_act": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.17895179986953735,
+    "max_float": 2.476245641708374,
+    "dtype_int": "int32",
+    "min_int": -480,
+    "max_int": 6642
+  },
+  "blocks_3_mlp_qact1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.175517275929451,
+    "max_float": 2.476743698120117,
+    "dtype_int": "int8",
+    "min_int": -9,
+    "max_int": 127
+  },
+  "blocks_3_mlp_fc2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.1561903953552246,
+    "max_float": 1.2383544445037842,
+    "dtype_int": "int32",
+    "min_int": -49774,
+    "max_int": 46703
+  },
+  "blocks_3_mlp_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.1561732292175293,
+    "max_float": 1.2026007175445557,
+    "dtype_int": "int32",
+    "min_int": -31502,
+    "max_int": 32767
+  },
+  "blocks_3_qact4": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.232813835144043,
+    "max_float": 11.166878700256348,
+    "dtype_int": "int32",
+    "min_int": -9482,
+    "max_int": 32753
+  },
+  "blocks_4_norm1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.832395076751709,
+    "max_float": 7.665238380432129,
+    "dtype_int": "int32",
+    "min_int": -492937760,
+    "max_int": 744068608
+  },
+  "blocks_4_qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.847713947296143,
+    "max_float": 7.656285285949707,
+    "dtype_int": "int8",
+    "min_int": -97,
+    "max_int": 127
+  },
+  "blocks_4_attn_qkv": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.85917854309082,
+    "max_float": 4.130293846130371,
+    "dtype_int": "int32",
+    "min_int": -94624,
+    "max_int": 68220
+  },
+  "blocks_4_attn_qact1": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.841000080108643,
+    "max_float": 4.143896102905273,
+    "dtype_int": "int8",
+    "min_int": -125,
+    "max_int": 107
+  },
+  "blocks_4_attn_matmul_1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -52.195064544677734,
+    "max_float": 46.72508239746094,
+    "dtype_int": "int32",
+    "min_int": -34800,
+    "max_int": 31153
+  },
+  "blocks_4_attn_qact_attn1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.500286102294922,
+    "max_float": 5.8401007652282715,
+    "dtype_int": "int8",
+    "min_int": -128,
+    "max_int": 115
+  },
+  "blocks_4_attn_int_softmax": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": 0.0,
+    "max_float": 0.47882080078125,
+    "dtype_int": "int32",
+    "min_int": 0,
+    "max_int": 15690
+  },
+  "blocks_4_attn_matmul_2": {
+    "shape": [
+      1,
+      3,
+      197,
+      64
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.1114054918289185,
+    "max_float": 1.6597800254821777,
+    "dtype_int": "int32",
+    "min_int": -940367,
+    "max_int": 1404350
+  },
+  "blocks_4_attn_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.115179181098938,
+    "max_float": 1.6279053688049316,
+    "dtype_int": "int8",
+    "min_int": -87,
+    "max_int": 127
+  },
+  "blocks_4_attn_proj": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.8490314483642578,
+    "max_float": 1.158408522605896,
+    "dtype_int": "int32",
+    "min_int": -67739,
+    "max_int": 82280
+  },
+  "blocks_4_attn_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.8490263223648071,
+    "max_float": 1.1502065658569336,
+    "dtype_int": "int32",
+    "min_int": -24187,
+    "max_int": 32767
+  },
+  "blocks_4_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.4793004989624023,
+    "max_float": 11.460216522216797,
+    "dtype_int": "int32",
+    "min_int": -9948,
+    "max_int": 32767
+  },
+  "blocks_4_norm2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.670022964477539,
+    "max_float": 9.796730041503906,
+    "dtype_int": "int32",
+    "min_int": -558577280,
+    "max_int": 929599232
+  },
+  "blocks_4_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.676560401916504,
+    "max_float": 9.751532554626465,
+    "dtype_int": "int8",
+    "min_int": -113,
+    "max_int": 127
+  },
+  "blocks_4_mlp_fc1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.85685396194458,
+    "max_float": 2.4479169845581055,
+    "dtype_int": "int32",
+    "min_int": -67602,
+    "max_int": 33606
+  },
+  "blocks_4_mlp_qact_gelu": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.886087417602539,
+    "max_float": 2.4217119216918945,
+    "dtype_int": "int8",
+    "min_int": -127,
+    "max_int": 39
+  },
+  "blocks_4_mlp_act": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.18288969993591309,
+    "max_float": 2.36495304107666,
+    "dtype_int": "int32",
+    "min_int": -377,
+    "max_int": 4875
+  },
+  "blocks_4_mlp_qact1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.19078822433948517,
+    "max_float": 2.365773916244507,
+    "dtype_int": "int8",
+    "min_int": -10,
+    "max_int": 124
+  },
+  "blocks_4_mlp_fc2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.3685693740844727,
+    "max_float": 1.094215750694275,
+    "dtype_int": "int32",
+    "min_int": -46085,
+    "max_int": 38205
+  },
+  "blocks_4_mlp_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.3685836791992188,
+    "max_float": 1.0941988229751587,
+    "dtype_int": "int32",
+    "min_int": -32366,
+    "max_int": 25877
+  },
+  "blocks_4_qact4": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.1444461345672607,
+    "max_float": 11.11718463897705,
+    "dtype_int": "int32",
+    "min_int": -9268,
+    "max_int": 32767
+  },
+  "blocks_5_norm1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.456838607788086,
+    "max_float": 6.590680122375488,
+    "dtype_int": "int32",
+    "min_int": -468244064,
+    "max_int": 731873280
+  },
+  "blocks_5_qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.4318389892578125,
+    "max_float": 6.587447643280029,
+    "dtype_int": "int8",
+    "min_int": -124,
+    "max_int": 127
+  },
+  "blocks_5_attn_qkv": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.6818084716796875,
+    "max_float": 3.8637664318084717,
+    "dtype_int": "int32",
+    "min_int": -93798,
+    "max_int": 80121
+  },
+  "blocks_5_attn_qact1": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.673964023590088,
+    "max_float": 3.8643009662628174,
+    "dtype_int": "int8",
+    "min_int": -127,
+    "max_int": 105
+  },
+  "blocks_5_attn_matmul_1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -57.88246154785156,
+    "max_float": 75.40499114990234,
+    "dtype_int": "int32",
+    "min_int": -42735,
+    "max_int": 55672
+  },
+  "blocks_5_attn_qact_attn1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.254848480224609,
+    "max_float": 9.446416854858398,
+    "dtype_int": "int8",
+    "min_int": -96,
+    "max_int": 125
+  },
+  "blocks_5_attn_int_softmax": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": 0.0,
+    "max_float": 0.81689453125,
+    "dtype_int": "int32",
+    "min_int": 0,
+    "max_int": 26768
+  },
+  "blocks_5_attn_matmul_2": {
+    "shape": [
+      1,
+      3,
+      197,
+      64
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.3009769916534424,
+    "max_float": 1.5200656652450562,
+    "dtype_int": "int32",
+    "min_int": -1158345,
+    "max_int": 1353414
+  },
+  "blocks_5_attn_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.2959909439086914,
+    "max_float": 1.5160647630691528,
+    "dtype_int": "int8",
+    "min_int": -106,
+    "max_int": 124
+  },
+  "blocks_5_attn_proj": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.92281174659729,
+    "max_float": 1.1622498035430908,
+    "dtype_int": "int32",
+    "min_int": -68667,
+    "max_int": 62878
+  },
+  "blocks_5_attn_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.9228034019470215,
+    "max_float": 1.1619082689285278,
+    "dtype_int": "int32",
+    "min_int": -26024,
+    "max_int": 32767
+  },
+  "blocks_5_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.69630765914917,
+    "max_float": 11.903382301330566,
+    "dtype_int": "int32",
+    "min_int": -10175,
+    "max_int": 32767
+  },
+  "blocks_5_norm2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -9.424954414367676,
+    "max_float": 9.605039596557617,
+    "dtype_int": "int32",
+    "min_int": -528561056,
+    "max_int": 953867648
+  },
+  "blocks_5_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -9.398096084594727,
+    "max_float": 9.472683906555176,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 127
+  },
+  "blocks_5_mlp_fc1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.463881492614746,
+    "max_float": 4.270652770996094,
+    "dtype_int": "int32",
+    "min_int": -62299,
+    "max_int": 47030
+  },
+  "blocks_5_mlp_qact_gelu": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.453760623931885,
+    "max_float": 4.259291648864746,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 72
+  },
+  "blocks_5_mlp_act": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.17423535883426666,
+    "max_float": 4.1594648361206055,
+    "dtype_int": "int32",
+    "min_int": -377,
+    "max_int": 9000
+  },
+  "blocks_5_mlp_qact1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.16597330570220947,
+    "max_float": 4.149332523345947,
+    "dtype_int": "int8",
+    "min_int": -5,
+    "max_int": 125
+  },
+  "blocks_5_mlp_fc2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.0880000591278076,
+    "max_float": 3.1538805961608887,
+    "dtype_int": "int32",
+    "min_int": -41200,
+    "max_int": 37998
+  },
+  "blocks_5_mlp_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.0880050659179688,
+    "max_float": 3.1538946628570557,
+    "dtype_int": "int32",
+    "min_int": -30182,
+    "max_int": 30826
+  },
+  "blocks_5_qact4": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.4251017570495605,
+    "max_float": 11.161548614501953,
+    "dtype_int": "int32",
+    "min_int": -12967,
+    "max_int": 32707
+  },
+  "blocks_6_norm1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.373447418212891,
+    "max_float": 7.650143146514893,
+    "dtype_int": "int32",
+    "min_int": -466184448,
+    "max_int": 767982592
+  },
+  "blocks_6_qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.3879780769348145,
+    "max_float": 7.653520584106445,
+    "dtype_int": "int8",
+    "min_int": -106,
+    "max_int": 127
+  },
+  "blocks_6_attn_qkv": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.407902240753174,
+    "max_float": 4.4049482345581055,
+    "dtype_int": "int32",
+    "min_int": -91025,
+    "max_int": 68030
+  },
+  "blocks_6_attn_qact1": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.403724193572998,
+    "max_float": 4.369319915771484,
+    "dtype_int": "int8",
+    "min_int": -128,
+    "max_int": 127
+  },
+  "blocks_6_attn_matmul_1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -63.88587951660156,
+    "max_float": 78.55712127685547,
+    "dtype_int": "int32",
+    "min_int": -53974,
+    "max_int": 66369
+  },
+  "blocks_6_attn_qact_attn1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.970710277557373,
+    "max_float": 9.827962875366211,
+    "dtype_int": "int8",
+    "min_int": -103,
+    "max_int": 127
+  },
+  "blocks_6_attn_int_softmax": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": 0.0,
+    "max_float": 0.990631103515625,
+    "dtype_int": "int32",
+    "min_int": 0,
+    "max_int": 32461
+  },
+  "blocks_6_attn_matmul_2": {
+    "shape": [
+      1,
+      3,
+      197,
+      64
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.6902849674224854,
+    "max_float": 1.557921290397644,
+    "dtype_int": "int32",
+    "min_int": -1609903,
+    "max_int": 1483834
+  },
+  "blocks_6_attn_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.6917853355407715,
+    "max_float": 1.5575165748596191,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 116
+  },
+  "blocks_6_attn_proj": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.9629696011543274,
+    "max_float": 1.4002177715301514,
+    "dtype_int": "int32",
+    "min_int": -64167,
+    "max_int": 71648
+  },
+  "blocks_6_attn_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.9629883766174316,
+    "max_float": 1.4002269506454468,
+    "dtype_int": "int32",
+    "min_int": -22456,
+    "max_int": 32652
+  },
+  "blocks_6_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.321959018707275,
+    "max_float": 11.975030899047852,
+    "dtype_int": "int32",
+    "min_int": -11812,
+    "max_int": 32728
+  },
+  "blocks_6_norm2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.276503562927246,
+    "max_float": 9.795258522033691,
+    "dtype_int": "int32",
+    "min_int": -411938848,
+    "max_int": 1034599744
+  },
+  "blocks_6_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.279870986938477,
+    "max_float": 9.7365140914917,
+    "dtype_int": "int8",
+    "min_int": -108,
+    "max_int": 127
+  },
+  "blocks_6_mlp_fc1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.116255760192871,
+    "max_float": 5.607439041137695,
+    "dtype_int": "int32",
+    "min_int": -69687,
+    "max_int": 51117
+  },
+  "blocks_6_mlp_qact_gelu": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.134923458099365,
+    "max_float": 5.603552341461182,
+    "dtype_int": "int8",
+    "min_int": -127,
+    "max_int": 116
+  },
+  "blocks_6_mlp_act": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.18341368436813354,
+    "max_float": 5.3846635818481445,
+    "dtype_int": "int32",
+    "min_int": -486,
+    "max_int": 14268
+  },
+  "blocks_6_mlp_qact1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.17378896474838257,
+    "max_float": 5.387457847595215,
+    "dtype_int": "int8",
+    "min_int": -4,
+    "max_int": 124
+  },
+  "blocks_6_mlp_fc2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.8352900743484497,
+    "max_float": 4.211759567260742,
+    "dtype_int": "int32",
+    "min_int": -19951,
+    "max_int": 32832
+  },
+  "blocks_6_mlp_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.8352364301681519,
+    "max_float": 4.175475120544434,
+    "dtype_int": "int32",
+    "min_int": -14402,
+    "max_int": 32767
+  },
+  "blocks_6_qact4": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.067805290222168,
+    "max_float": 11.61489486694336,
+    "dtype_int": "int32",
+    "min_int": -17118,
+    "max_int": 32767
+  },
+  "blocks_7_norm1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.763748645782471,
+    "max_float": 7.123615741729736,
+    "dtype_int": "int32",
+    "min_int": -479285824,
+    "max_int": 751661696
+  },
+  "blocks_7_qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.776111125946045,
+    "max_float": 7.1220011711120605,
+    "dtype_int": "int8",
+    "min_int": -103,
+    "max_int": 127
+  },
+  "blocks_7_attn_qkv": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.668757915496826,
+    "max_float": 4.632014274597168,
+    "dtype_int": "int32",
+    "min_int": -64949,
+    "max_int": 66607
+  },
+  "blocks_7_attn_qact1": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.4990973472595215,
+    "max_float": 4.4639482498168945,
+    "dtype_int": "int8",
+    "min_int": -128,
+    "max_int": 127
+  },
+  "blocks_7_attn_matmul_1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -55.3476448059082,
+    "max_float": 64.6877670288086,
+    "dtype_int": "int32",
+    "min_int": -44799,
+    "max_int": 52359
+  },
+  "blocks_7_attn_qact_attn1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.8961405754089355,
+    "max_float": 8.034952163696289,
+    "dtype_int": "int8",
+    "min_int": -109,
+    "max_int": 127
+  },
+  "blocks_7_attn_int_softmax": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": 0.0,
+    "max_float": 0.898681640625,
+    "dtype_int": "int32",
+    "min_int": 0,
+    "max_int": 29448
+  },
+  "blocks_7_attn_matmul_2": {
+    "shape": [
+      1,
+      3,
+      197,
+      64
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.234452486038208,
+    "max_float": 1.3940505981445312,
+    "dtype_int": "int32",
+    "min_int": -1150824,
+    "max_int": 1299610
+  },
+  "blocks_7_attn_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.2360243797302246,
+    "max_float": 1.3769744634628296,
+    "dtype_int": "int8",
+    "min_int": -114,
+    "max_int": 127
+  },
+  "blocks_7_attn_proj": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.0214035511016846,
+    "max_float": 1.629381537437439,
+    "dtype_int": "int32",
+    "min_int": -85845,
+    "max_int": 129514
+  },
+  "blocks_7_attn_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.0214084386825562,
+    "max_float": 1.6293954849243164,
+    "dtype_int": "int32",
+    "min_int": -20479,
+    "max_int": 32669
+  },
+  "blocks_7_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.332615375518799,
+    "max_float": 12.364360809326172,
+    "dtype_int": "int32",
+    "min_int": -16775,
+    "max_int": 32753
+  },
+  "blocks_7_norm2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -9.847098350524902,
+    "max_float": 12.175100326538086,
+    "dtype_int": "int32",
+    "min_int": -418599552,
+    "max_int": 1081157888
+  },
+  "blocks_7_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -9.890458106994629,
+    "max_float": 12.19503116607666,
+    "dtype_int": "int8",
+    "min_int": -103,
+    "max_int": 127
+  },
+  "blocks_7_mlp_fc1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.146644592285156,
+    "max_float": 3.8746531009674072,
+    "dtype_int": "int32",
+    "min_int": -57417,
+    "max_int": 39720
+  },
+  "blocks_7_mlp_qact_gelu": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.1439666748046875,
+    "max_float": 3.8554739952087402,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 68
+  },
+  "blocks_7_mlp_act": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.184268981218338,
+    "max_float": 3.7952322959899902,
+    "dtype_int": "int32",
+    "min_int": -416,
+    "max_int": 8568
+  },
+  "blocks_7_mlp_qact1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.17936956882476807,
+    "max_float": 3.7966561317443848,
+    "dtype_int": "int8",
+    "min_int": -6,
+    "max_int": 127
+  },
+  "blocks_7_mlp_fc2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.85718834400177,
+    "max_float": 3.3425307273864746,
+    "dtype_int": "int32",
+    "min_int": -29833,
+    "max_int": 29438
+  },
+  "blocks_7_mlp_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.857177972793579,
+    "max_float": 3.342349052429199,
+    "dtype_int": "int32",
+    "min_int": -18207,
+    "max_int": 32767
+  },
+  "blocks_7_qact4": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.721624374389648,
+    "max_float": 15.300159454345703,
+    "dtype_int": "int32",
+    "min_int": -16351,
+    "max_int": 32399
+  },
+  "blocks_8_norm1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.503521919250488,
+    "max_float": 5.72934627532959,
+    "dtype_int": "int32",
+    "min_int": -477247296,
+    "max_int": 723763840
+  },
+  "blocks_8_qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.509125232696533,
+    "max_float": 5.7349090576171875,
+    "dtype_int": "int8",
+    "min_int": -122,
+    "max_int": 127
+  },
+  "blocks_8_attn_qkv": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.124189376831055,
+    "max_float": 4.321956157684326,
+    "dtype_int": "int32",
+    "min_int": -90330,
+    "max_int": 91417
+  },
+  "blocks_8_attn_qact1": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.125032424926758,
+    "max_float": 4.324245929718018,
+    "dtype_int": "int8",
+    "min_int": -128,
+    "max_int": 108
+  },
+  "blocks_8_attn_matmul_1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -57.107295989990234,
+    "max_float": 45.47005081176758,
+    "dtype_int": "int32",
+    "min_int": -35622,
+    "max_int": 28363
+  },
+  "blocks_8_attn_qact_attn1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.116755962371826,
+    "max_float": 5.704700946807861,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 101
+  },
+  "blocks_8_attn_int_softmax": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": 0.0,
+    "max_float": 0.84979248046875,
+    "dtype_int": "int32",
+    "min_int": 0,
+    "max_int": 27846
+  },
+  "blocks_8_attn_matmul_2": {
+    "shape": [
+      1,
+      3,
+      197,
+      64
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.583655834197998,
+    "max_float": 1.52339768409729,
+    "dtype_int": "int32",
+    "min_int": -1296057,
+    "max_int": 1246742
+  },
+  "blocks_8_attn_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.5881788730621338,
+    "max_float": 1.5251559019088745,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 121
+  },
+  "blocks_8_attn_proj": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.9791704416275024,
+    "max_float": 0.9043055176734924,
+    "dtype_int": "int32",
+    "min_int": -66191,
+    "max_int": 51158
+  },
+  "blocks_8_attn_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.9791707992553711,
+    "max_float": 0.9043079614639282,
+    "dtype_int": "int32",
+    "min_int": -32398,
+    "max_int": 29921
+  },
+  "blocks_8_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.20995807647705,
+    "max_float": 16.161375045776367,
+    "dtype_int": "int32",
+    "min_int": -16449,
+    "max_int": 32380
+  },
+  "blocks_8_norm2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -14.871400833129883,
+    "max_float": 15.884918212890625,
+    "dtype_int": "int32",
+    "min_int": -417733056,
+    "max_int": 1091765504
+  },
+  "blocks_8_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -14.893645286560059,
+    "max_float": 15.894899368286133,
+    "dtype_int": "int8",
+    "min_int": -119,
+    "max_int": 127
+  },
+  "blocks_8_mlp_fc1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -11.590435981750488,
+    "max_float": 4.715579032897949,
+    "dtype_int": "int32",
+    "min_int": -63182,
+    "max_int": 39099
+  },
+  "blocks_8_mlp_qact_gelu": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -11.621525764465332,
+    "max_float": 4.74158239364624,
+    "dtype_int": "int8",
+    "min_int": -125,
+    "max_int": 51
+  },
+  "blocks_8_mlp_act": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.20265035331249237,
+    "max_float": 4.667495250701904,
+    "dtype_int": "int32",
+    "min_int": -279,
+    "max_int": 6426
+  },
+  "blocks_8_mlp_qact1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.21660271286964417,
+    "max_float": 4.584757328033447,
+    "dtype_int": "int8",
+    "min_int": -6,
+    "max_int": 127
+  },
+  "blocks_8_mlp_fc2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -2.0868256092071533,
+    "max_float": 2.8215014934539795,
+    "dtype_int": "int32",
+    "min_int": -29436,
+    "max_int": 26744
+  },
+  "blocks_8_mlp_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -2.0868031978607178,
+    "max_float": 2.821512460708618,
+    "dtype_int": "int32",
+    "min_int": -23745,
+    "max_int": 32105
+  },
+  "blocks_8_qact4": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.924142837524414,
+    "max_float": 17.373546600341797,
+    "dtype_int": "int32",
+    "min_int": -16749,
+    "max_int": 32607
+  },
+  "blocks_9_norm1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.323000907897949,
+    "max_float": 5.30614709854126,
+    "dtype_int": "int32",
+    "min_int": -524781568,
+    "max_int": 723808000
+  },
+  "blocks_9_qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.330911159515381,
+    "max_float": 5.28893518447876,
+    "dtype_int": "int8",
+    "min_int": -127,
+    "max_int": 126
+  },
+  "blocks_9_attn_qkv": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.352377414703369,
+    "max_float": 3.9481699466705322,
+    "dtype_int": "int32",
+    "min_int": -82277,
+    "max_int": 107080
+  },
+  "blocks_9_attn_qact1": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.340685844421387,
+    "max_float": 3.9617369174957275,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 115
+  },
+  "blocks_9_attn_matmul_1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -46.92111587524414,
+    "max_float": 38.65509033203125,
+    "dtype_int": "int32",
+    "min_int": -39536,
+    "max_int": 32571
+  },
+  "blocks_9_attn_qact_attn1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.8576579093933105,
+    "max_float": 4.834892272949219,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 104
+  },
+  "blocks_9_attn_int_softmax": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": 0.0,
+    "max_float": 0.5787353515625,
+    "dtype_int": "int32",
+    "min_int": 0,
+    "max_int": 18964
+  },
+  "blocks_9_attn_matmul_2": {
+    "shape": [
+      1,
+      3,
+      197,
+      64
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.4042376279830933,
+    "max_float": 1.3072643280029297,
+    "dtype_int": "int32",
+    "min_int": -1335681,
+    "max_int": 1243442
+  },
+  "blocks_9_attn_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.407942533493042,
+    "max_float": 1.307375192642212,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 117
+  },
+  "blocks_9_attn_proj": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.897438883781433,
+    "max_float": 0.8405823111534119,
+    "dtype_int": "int32",
+    "min_int": -82489,
+    "max_int": 72370
+  },
+  "blocks_9_attn_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.8974628448486328,
+    "max_float": 0.8405922651290894,
+    "dtype_int": "int32",
+    "min_int": -32268,
+    "max_int": 14295
+  },
+  "blocks_9_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.822884559631348,
+    "max_float": 16.042503356933594,
+    "dtype_int": "int32",
+    "min_int": -17929,
+    "max_int": 32600
+  },
+  "blocks_9_norm2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -9.604486465454102,
+    "max_float": 14.137674331665039,
+    "dtype_int": "int32",
+    "min_int": -382948960,
+    "max_int": 882952000
+  },
+  "blocks_9_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -9.653302192687988,
+    "max_float": 13.93147087097168,
+    "dtype_int": "int8",
+    "min_int": -88,
+    "max_int": 127
+  },
+  "blocks_9_mlp_fc1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.875359535217285,
+    "max_float": 5.1084723472595215,
+    "dtype_int": "int32",
+    "min_int": -57611,
+    "max_int": 41616
+  },
+  "blocks_9_mlp_qact_gelu": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.85566520690918,
+    "max_float": 5.13066291809082,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 73
+  },
+  "blocks_9_mlp_act": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.18723845481872559,
+    "max_float": 5.050496578216553,
+    "dtype_int": "int32",
+    "min_int": -341,
+    "max_int": 9198
+  },
+  "blocks_9_mlp_qact1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.19371798634529114,
+    "max_float": 4.920436859130859,
+    "dtype_int": "int8",
+    "min_int": -5,
+    "max_int": 127
+  },
+  "blocks_9_mlp_fc2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.185161828994751,
+    "max_float": 3.404266357421875,
+    "dtype_int": "int32",
+    "min_int": -28973,
+    "max_int": 33647
+  },
+  "blocks_9_mlp_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.1851320266723633,
+    "max_float": 3.4043149948120117,
+    "dtype_int": "int32",
+    "min_int": -28991,
+    "max_int": 30986
+  },
+  "blocks_9_qact4": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -10.264182090759277,
+    "max_float": 18.201454162597656,
+    "dtype_int": "int32",
+    "min_int": -18478,
+    "max_int": 32767
+  },
+  "blocks_10_norm1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.6928277015686035,
+    "max_float": 4.781100273132324,
+    "dtype_int": "int32",
+    "min_int": -691131648,
+    "max_int": 475536256
+  },
+  "blocks_10_qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.648687362670898,
+    "max_float": 4.766079902648926,
+    "dtype_int": "int8",
+    "min_int": -128,
+    "max_int": 108
+  },
+  "blocks_10_attn_qkv": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.705911874771118,
+    "max_float": 4.196584224700928,
+    "dtype_int": "int32",
+    "min_int": -73583,
+    "max_int": 87818
+  },
+  "blocks_10_attn_qact1": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.6946535110473633,
+    "max_float": 4.1939311027526855,
+    "dtype_int": "int8",
+    "min_int": -111,
+    "max_int": 126
+  },
+  "blocks_10_attn_matmul_1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -47.81595993041992,
+    "max_float": 29.916688919067383,
+    "dtype_int": "int32",
+    "min_int": -43159,
+    "max_int": 27003
+  },
+  "blocks_10_attn_qact_attn1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -5.997385025024414,
+    "max_float": 3.7241828441619873,
+    "dtype_int": "int8",
+    "min_int": -124,
+    "max_int": 77
+  },
+  "blocks_10_attn_int_softmax": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": 6.103515625e-05,
+    "max_float": 0.483856201171875,
+    "dtype_int": "int32",
+    "min_int": 2,
+    "max_int": 15855
+  },
+  "blocks_10_attn_matmul_2": {
+    "shape": [
+      1,
+      3,
+      197,
+      64
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.067320466041565,
+    "max_float": 1.139095664024353,
+    "dtype_int": "int32",
+    "min_int": -1050737,
+    "max_int": 1121397
+  },
+  "blocks_10_attn_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.0676124095916748,
+    "max_float": 1.1412408351898193,
+    "dtype_int": "int8",
+    "min_int": -116,
+    "max_int": 124
+  },
+  "blocks_10_attn_proj": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.8212738037109375,
+    "max_float": 0.8915081024169922,
+    "dtype_int": "int32",
+    "min_int": -52872,
+    "max_int": 59614
+  },
+  "blocks_10_attn_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.821287214756012,
+    "max_float": 0.8915081024169922,
+    "dtype_int": "int32",
+    "min_int": -30140,
+    "max_int": 32717
+  },
+  "blocks_10_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -10.409711837768555,
+    "max_float": 17.432220458984375,
+    "dtype_int": "int32",
+    "min_int": -19552,
+    "max_int": 32742
+  },
+  "blocks_10_norm2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.186115264892578,
+    "max_float": 10.586573600769043,
+    "dtype_int": "int32",
+    "min_int": -723988416,
+    "max_int": 436053824
+  },
+  "blocks_10_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.200933456420898,
+    "max_float": 10.568212509155273,
+    "dtype_int": "int8",
+    "min_int": -97,
+    "max_int": 125
+  },
+  "blocks_10_mlp_fc1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.177145957946777,
+    "max_float": 3.707130193710327,
+    "dtype_int": "int32",
+    "min_int": -79622,
+    "max_int": 39794
+  },
+  "blocks_10_mlp_qact_gelu": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.179571151733398,
+    "max_float": 3.693999767303467,
+    "dtype_int": "int8",
+    "min_int": -124,
+    "max_int": 56
+  },
+  "blocks_10_mlp_act": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.17573297023773193,
+    "max_float": 3.6362810134887695,
+    "dtype_int": "int32",
+    "min_int": -341,
+    "max_int": 7056
+  },
+  "blocks_10_mlp_qact1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.18023847043514252,
+    "max_float": 3.270040988922119,
+    "dtype_int": "int8",
+    "min_int": -7,
+    "max_int": 127
+  },
+  "blocks_10_mlp_fc2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.8603109121322632,
+    "max_float": 5.798874378204346,
+    "dtype_int": "int32",
+    "min_int": -28184,
+    "max_int": 37889
+  },
+  "blocks_10_mlp_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.8603227138519287,
+    "max_float": 5.742552280426025,
+    "dtype_int": "int32",
+    "min_int": -10615,
+    "max_int": 32767
+  },
+  "blocks_10_qact4": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -10.636946678161621,
+    "max_float": 22.83342742919922,
+    "dtype_int": "int32",
+    "min_int": -15169,
+    "max_int": 32562
+  },
+  "blocks_11_norm1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.98176908493042,
+    "max_float": 5.2185163497924805,
+    "dtype_int": "int32",
+    "min_int": -732461824,
+    "max_int": 547477888
+  },
+  "blocks_11_qact1": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -6.970846652984619,
+    "max_float": 5.214413166046143,
+    "dtype_int": "int8",
+    "min_int": -127,
+    "max_int": 95
+  },
+  "blocks_11_attn_qkv": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.054132461547852,
+    "max_float": 4.142232418060303,
+    "dtype_int": "int32",
+    "min_int": -74514,
+    "max_int": 69506
+  },
+  "blocks_11_attn_qact1": {
+    "shape": [
+      1,
+      197,
+      576
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.063453197479248,
+    "max_float": 4.129525661468506,
+    "dtype_int": "int8",
+    "min_int": -123,
+    "max_int": 125
+  },
+  "blocks_11_attn_matmul_1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -70.53659057617188,
+    "max_float": 29.050642013549805,
+    "dtype_int": "int32",
+    "min_int": -64630,
+    "max_int": 26618
+  },
+  "blocks_11_attn_qact_attn1": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": -8.689183235168457,
+    "max_float": 3.597864866256714,
+    "dtype_int": "int8",
+    "min_int": -128,
+    "max_int": 53
+  },
+  "blocks_11_attn_int_softmax": {
+    "shape": [
+      1,
+      3,
+      197,
+      197
+    ],
+    "dtype_float": "float32",
+    "min_float": 0.0,
+    "max_float": 0.421356201171875,
+    "dtype_int": "int32",
+    "min_int": 0,
+    "max_int": 13807
+  },
+  "blocks_11_attn_matmul_2": {
+    "shape": [
+      1,
+      3,
+      197,
+      64
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.0193214416503906,
+    "max_float": 1.0676698684692383,
+    "dtype_int": "int32",
+    "min_int": -1011046,
+    "max_int": 1059002
+  },
+  "blocks_11_attn_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -1.0215352773666382,
+    "max_float": 1.063401460647583,
+    "dtype_int": "int8",
+    "min_int": -122,
+    "max_int": 127
+  },
+  "blocks_11_attn_proj": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.6242637634277344,
+    "max_float": 4.5798139572143555,
+    "dtype_int": "int32",
+    "min_int": -61751,
+    "max_int": 135398
+  },
+  "blocks_11_attn_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.624197244644165,
+    "max_float": 4.5797905921936035,
+    "dtype_int": "int32",
+    "min_int": -4349,
+    "max_int": 31909
+  },
+  "blocks_11_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -10.169787406921387,
+    "max_float": 25.126089096069336,
+    "dtype_int": "int32",
+    "min_int": -13105,
+    "max_int": 32378
+  },
+  "blocks_11_norm2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.501065254211426,
+    "max_float": 5.583821773529053,
+    "dtype_int": "int32",
+    "min_int": -657711872,
+    "max_int": 410979648
+  },
+  "blocks_11_qact3": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.489215850830078,
+    "max_float": 5.571976661682129,
+    "dtype_int": "int8",
+    "min_int": -125,
+    "max_int": 93
+  },
+  "blocks_11_mlp_fc1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.587250709533691,
+    "max_float": 3.2921314239501953,
+    "dtype_int": "int32",
+    "min_int": -110704,
+    "max_int": 51368
+  },
+  "blocks_11_mlp_qact_gelu": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -7.600547790527344,
+    "max_float": 3.317699432373047,
+    "dtype_int": "int8",
+    "min_int": -126,
+    "max_int": 55
+  },
+  "blocks_11_mlp_act": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.177666574716568,
+    "max_float": 3.239940881729126,
+    "dtype_int": "int32",
+    "min_int": -377,
+    "max_int": 6875
+  },
+  "blocks_11_mlp_qact1": {
+    "shape": [
+      1,
+      197,
+      768
+    ],
+    "dtype_float": "float32",
+    "min_float": -0.17557910084724426,
+    "max_float": 3.185506582260132,
+    "dtype_int": "int8",
+    "min_int": -7,
+    "max_int": 127
+  },
+  "blocks_11_mlp_fc2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.1099469661712646,
+    "max_float": 1.8422614336013794,
+    "dtype_int": "int32",
+    "min_int": -30477,
+    "max_int": 25145
+  },
+  "blocks_11_mlp_qact2": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.005606174468994,
+    "max_float": 1.8422729969024658,
+    "dtype_int": "int32",
+    "min_int": -32768,
+    "max_int": 20085
+  },
+  "blocks_11_qact4": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -9.810539245605469,
+    "max_float": 23.702035903930664,
+    "dtype_int": "int32",
+    "min_int": -13532,
+    "max_int": 32693
+  },
+  "norm": {
+    "shape": [
+      1,
+      197,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -9.167299270629883,
+    "max_float": 8.444868087768555,
+    "dtype_int": "int32",
+    "min_int": -947363904,
+    "max_int": 319448256
+  },
+  "qact2": {
+    "shape": [
+      1,
+      192
+    ],
+    "dtype_float": "float32",
+    "min_float": -4.786015033721924,
+    "max_float": 5.151050090789795,
+    "dtype_int": "int8",
+    "min_int": -118,
+    "max_int": 127
+  },
+  "head": {
+    "shape": [
+      1,
+      1000
+    ],
+    "dtype_float": "float32",
+    "min_float": -3.212132215499878,
+    "max_float": 7.6483588218688965,
+    "dtype_int": "int32",
+    "min_int": -77267,
+    "max_int": 199957
+  }
+}

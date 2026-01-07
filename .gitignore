@@ -8,3 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
+
+ImageNet
+ILSVRC2012_img_val.tar
