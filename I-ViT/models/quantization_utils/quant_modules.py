@@ -334,6 +334,10 @@ class IntLayerNorm(nn.LayerNorm):
     """
     Implementation of I-LayerNorm
     Class to quantize given LayerNorm layer
+
+    修改說明 (2026-01-09):
+    - 新增 output_integer buffer 保存內部的整數計算結果 (y_int + bias_int)
+    - 這個值可用於 C-model 驗證，不包含 per-channel scaling_factor 的浮點誤差
     """
     def __init__(self, 
                 normalized_shape, 
@@ -343,6 +347,8 @@ class IntLayerNorm(nn.LayerNorm):
         self.dim_sqrt = None
         self.register_buffer('norm_scaling_factor', torch.zeros(1))
         self.register_buffer('bias_integer', torch.zeros_like(self.bias))
+        # 新增：保存內部整數輸出，用於 C-model 驗證
+        self.register_buffer('output_integer', torch.zeros(1))
 
     def fix(self):
         pass
@@ -380,6 +386,10 @@ class IntLayerNorm(nn.LayerNorm):
         self.bias_integer = bias_int
 
         y_int = y_int + bias_int
+
+        # 保存內部整數輸出 (這是真正的整數計算結果，供 C-model 驗證)
+        self.output_integer = y_int.detach()
+        
         scaling_factor = scaling_factor * self.weight
         x = y_int * scaling_factor
         self.norm_scaling_factor = scaling_factor

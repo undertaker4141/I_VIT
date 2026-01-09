@@ -183,7 +183,23 @@ class PatternExtractor:
                 self.intermediate_outputs[name] = out.detach().cpu()
                 
                 # 嘗試計算 int 版本
-                if scale is not None:
+                # if scale is not None:
+                #     try:
+                #         int_out = (out / scale).round()
+                #         self.intermediate_outputs_int[name] = int_out.detach().cpu()
+                #     except:
+                #         pass
+                
+                # 修改 (2026-01-09): 對 IntLayerNorm 使用內部保存的 output_integer
+                if hasattr(module, 'output_integer') and module.output_integer is not None:
+                    # IntLayerNorm 直接使用內部整數輸出
+                    try:
+                        int_out = module.output_integer.detach().cpu()
+                        self.intermediate_outputs_int[name] = int_out
+                    except:
+                        pass
+                elif scale is not None:
+                    # 其他層使用 round(out / scale)
                     try:
                         int_out = (out / scale).round()
                         self.intermediate_outputs_int[name] = int_out.detach().cpu()
@@ -406,7 +422,7 @@ def extract_scales(model, output_dir):
                     
                     # Direction: I-ViT 都是右移
                     np.save(scales_dir / f"{prefix}_act_direction.npy", 
-                           np.array([-1], dtype=np.int8))
+                    np.array([-1], dtype=np.int8))
                     
                     scale_info[f"{prefix}_act"] = {
                         'float_value': float(scale_val[0]),
@@ -426,7 +442,7 @@ def extract_scales(model, output_dir):
                 np.save(scales_dir / f"{prefix}_fc_M.npy", M)
                 np.save(scales_dir / f"{prefix}_fc_S.npy", S)
                 np.save(scales_dir / f"{prefix}_fc_direction.npy", 
-                       np.array([-1], dtype=np.int8))
+                np.array([-1], dtype=np.int8))
         
         # conv_scaling_factor
         if hasattr(module, 'conv_scaling_factor'):
@@ -439,7 +455,7 @@ def extract_scales(model, output_dir):
                 np.save(scales_dir / f"{prefix}_conv_M.npy", M)
                 np.save(scales_dir / f"{prefix}_conv_S.npy", S)
                 np.save(scales_dir / f"{prefix}_conv_direction.npy", 
-                       np.array([-1], dtype=np.int8))
+                np.array([-1], dtype=np.int8))
         
         # norm_scaling_factor
         if hasattr(module, 'norm_scaling_factor'):
