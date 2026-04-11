@@ -11,7 +11,7 @@ I-ViT Pattern Extraction Script
 Usage:
     python extract_patterns.py \
         --checkpoint checkpoints/qat_calibrated.pth \
-        --test-image ../test_data/test_image.JPEG \
+        --test-image ../data/test_image.JPEG \
         --output ../patterns
 """
 
@@ -44,7 +44,7 @@ def parse_args():
                         help='Path to QAT checkpoint')
     parser.add_argument('--test-image', type=str, required=True,
                         help='Path to test image')
-    parser.add_argument('--output', type=str, default='../patterns',
+    parser.add_argument('--output', type=str, default='../patterns_pytorch',
                         help='Output directory')
     parser.add_argument('--model', type=str, default='deit_tiny',
                         choices=['deit_tiny', 'deit_small', 'deit_base'])

@@ -18,7 +18,7 @@ from pathlib import Path
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Verify extracted patterns")
-    parser.add_argument('--patterns', type=str, default='../patterns',
+    parser.add_argument('--patterns', type=str, default='../patterns_pytorch',
                         help='Path to patterns directory')
     return parser.parse_args()
 

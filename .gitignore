@@ -11,3 +11,7 @@ wheels/
 
 ImageNet
 ILSVRC2012_img_val.tar
+
+patterns_old_20260113_190225
+patterns_pytorch
+patterns_tvm
