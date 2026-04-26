@@ -15,3 +15,8 @@ ILSVRC2012_img_val.tar
 patterns_old_20260113_190225
 patterns_pytorch
 patterns_tvm
+patterns_cmodel_golden
+
+patterns_cmodel_golden.zip
+patterns_tvm.zip
+

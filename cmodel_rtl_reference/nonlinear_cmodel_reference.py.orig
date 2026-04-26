@@ -1,0 +1,261 @@
+"""
+IViT RTL C-Model 參考實作: 非線性層 (LayerNorm, GELU, Softmax)
+==================================================================
+此檔案包含了已通過 TVM 全整數推論 100% 驗證 (Bit-Exact) 的非線性層演算法算式。
+這份 Python 程式碼完全模擬了硬體的 Fixed-Point Datapath，所有運算皆透過整數與 Shift 完成，
+並且明確標示了可能發生的位元溢位與截斷 (Truncation) 行為。
+
+硬體設計團隊 (RTL Team) 請直接參考此檔案中的 `int_*_kernel` 函式進行 Verilog / SystemVerilog 撰寫。
+"""
+
+import numpy as np
+
+# ============================================================
+# 1. 核心共用模組: Shift-Based Exponential (標準版)
+# ============================================================
+def int_exp_shift_kernel_standard(x_int, x0_int, n):
+    """
+    標準版 Shift_Exp 模組。
+    原理: 使用多項式逼近搭配位元平移來計算 2^x。
+    對應的硬體指令/運算流程 (Algorithm Flow):
+    
+    1. Polynomial Approximation:
+       利用泰勒展開式的近似，透過 Shift 操作完成:
+       data = x_int + (x_int >> 1) - (x_int >> 4)
+       (在硬體實作時這就是簡單的位元平移加上對齊相加)
+       
+    2. Clamping (下界限制):
+       下界 (lower bound) 為 `n * x0_int`
+       data = max(data, n * x0_int)
+       
+    3. Integer Division (整數除法):
+       q = data // x0_int    (注意：這是一個有號整數除法)
+       r = data - q * x0_int (計算餘數)
+       
+    4. Base Calculation:
+       exp_base = (r >> 1) - x0_int
+       
+    5. Final Shift (變動平移):
+       shift_amt = n - q
+       如果 shift_amt >= 0: res = exp_base << shift_amt
+       如果 shift_amt <  0: res = exp_base >> (-shift_amt)
+       最終 res 取 max(res, 0)
+    """
+    term1 = x_int >> 1
+    term2 = x_int >> 4
+    x_int = x_int + term1 - term2
+
+    lower_bound = n * x0_int
+    x_int = np.maximum(x_int, lower_bound)
+
+    q = x_int // x0_int
+    r = x_int - x0_int * q
+
+    if not np.issubdtype(r.dtype, np.integer):
+        print("CRASH IN EXP! r type:", r.dtype, "q type:", q.dtype, "x0_int type:", type(x0_int), "x_int type:", x_int.dtype)
+
+    # 基礎乘數
+    exp_int = (r >> 1) - x0_int
+    shift = n - q
+
+    # 在硬體中這會是以動態移位器 (Barrel Shifter) 來實作
+    res = np.zeros_like(exp_int)
+    pos_mask = shift >= 0
+    if np.any(pos_mask):
+        res[pos_mask] = np.left_shift(exp_int[pos_mask], shift[pos_mask])
+    neg_mask = shift < 0
+    if np.any(neg_mask):
+        res[neg_mask] = np.right_shift(exp_int[neg_mask], -shift[neg_mask])
+
+    return np.maximum(res, 0)
+
+
+# ============================================================
+# 2. GELU (Gaussian Error Linear Unit)
+# ============================================================
+def int_gelu_kernel_fixed(x_int, x0_int, output_bit=8, n=23):
+    """
+    TVM 對齊版 INT-GELU
+    演算法流 (Algorithm Flow):
+    
+    [Step 1] Stability Shift (增加數值穩定性):
+       為了避免溢位，先找出 Channel / Sequence 軸向的最大值:
+       x_max = max(x_int)
+       x_algo = x_int - x_max  (此時 x_algo 必定小於等於 0)
+       
+    [Step 2] Exponential Kernel 運算:
+       計算 exp(x - x_max) -> 使用 int_exp_shift_kernel_standard(x_algo, x0_int, n)
+       計算 exp(-x_max)    -> 使用 int_exp_shift_kernel_standard(-x_max, x0_int, n)
+       
+    [Step 3] Sigmoid 運算 (Division):
+       sum_exp = exp(x - x_max) + exp(-x_max)
+       sum_exp 限制最大不超過 2^31 - 1, 最小不低於 1。
+       在此執行整數長除法： factor = (2^31 - 1) // sum_exp
+       
+    [Step 4] Re-scaling (與原輸入相乘):
+       將 factor 與原先的 exp 相乘: 
+       term = exp(x - x_max) * factor
+       sigmoid_int = term >> (31 - output_bit + 1)
+       
+    [Step 5] 最終輸出:
+       output_int = x_int * sigmoid_int
+    """
+    pre_x_int = x_int.astype(np.int64)
+
+    # 1. Stability shift
+    x_int_max = np.max(pre_x_int, axis=-1, keepdims=True)
+    x_algo = pre_x_int - x_int_max
+
+    # 2. 呼叫 exp kernel
+    exp_int = int_exp_shift_kernel_standard(x_algo, x0_int, n)
+    exp_int_max = int_exp_shift_kernel_standard(-x_int_max, x0_int, n)
+
+    # 3. 除法/ Sigmoid 分母計算
+    exp_int_sum = exp_int + exp_int_max
+    exp_int_sum = np.minimum(exp_int_sum, 2**31 - 1)
+    exp_int_sum_safe = np.maximum(exp_int_sum, 1)
+
+    factor = (2**31 - 1) // exp_int_sum_safe
+
+    # 4. 位移量計算
+    shift_amt = 31 - output_bit + 1  # 預設為 24
+    term = exp_int.astype(object) * factor.astype(object)
+    sigmoid_int = (term >> shift_amt).astype(np.int64)
+
+    # 5. Output
+    output = pre_x_int * sigmoid_int
+    return output.astype(np.int32)
+
+
+# ============================================================
+# 3. Softmax
+# ============================================================
+def int_softmax_kernel_fixed(x_int, x0_int, output_bit=8, n=16):
+    """
+    TVM 對齊版 INT-Softmax
+    演算法流 (Algorithm Flow):
+    
+    [Step 1] Stability Shift:
+       同 GELU，尋找最大值並減去：
+       x_max = max(x_int)
+       x_algo = x_int - x_max
+       
+    [Step 2] Exponential Kernel:
+       exp_int = int_exp_shift_kernel_standard(x_algo, x0_int, n)
+       
+    [Step 3] Summation & Division:
+       sum_exp = sum(exp_int)  (沿著 Softmax 生效的軸累加)
+       sum_exp 限制最大不超過 2^31 - 1, 最小不低於 1。
+       factor = (2^31 - 1) // sum_exp
+       
+    [Step 4] Scaling & Out:
+       term = exp_int * factor
+       output = term >> (31 - output_bit + 1)
+    """
+    pre_x_int = x_int.astype(np.int64)
+
+    # 1. Stability shift
+    x_int_max = np.max(pre_x_int, axis=-1, keepdims=True)
+    x_algo = pre_x_int - x_int_max
+
+    # 2. Exp
+    exp_int = int_exp_shift_kernel_standard(x_algo, x0_int, n)
+
+    # 3. Sum
+    exp_int_sum = np.sum(exp_int, axis=-1, keepdims=True)
+    exp_int_sum = np.minimum(exp_int_sum, 2**31 - 1)
+    exp_int_sum_safe = np.maximum(exp_int_sum, 1)
+
+    # Division
+    factor = (2**31 - 1) // exp_int_sum_safe
+
+    # 4. Final out
+    shift_amt = 31 - output_bit + 1  # = 24
+    term = exp_int.astype(object) * factor.astype(object)
+    output = (term >> shift_amt).astype(np.int64)
+
+    return output.astype(np.int32)
+
+
+# ============================================================
+# 4. LayerNorm
+# ============================================================
+def int_layer_norm_fixed(x_int, bias_int):
+    """
+    TVM 對齊版 INT-LayerNorm
+    這是在 RTL 當中實作極為複雜的一層，請嚴格按照下列演算法流設計 Datapath。
+    
+    演算法流 (Algorithm Flow):
+    
+    [Step 1] 溢位模擬 Mean 計算:
+       TVM 在處理累加時，會將值強制以 int16 累加 (有 overflow 被截斷的風險)：
+       sum = int16(int32(x) 累加)   ← 這步驟在軟體上是轉型模擬硬體的溢位截斷設計
+       mean = sum // N (這裡使用強制趨向於0的無條件捨去 div)
+       
+    [Step 2] Centering (去均值):
+       y_int = x_int - mean
+       *同樣受到 int16 型別隱含的截斷影響：
+       y_int = int16(y_int)
+    
+    [Step 3] Variance 計算:
+       y_sq = uint32(y_int * y_int)
+       var  = uint32( sum(y_sq) )  ← 此處累加使用 uint32，保證不會溢位
+       
+    [Step 4] Newton-Raphson 迭代找平方根 (STD 計算):
+       硬體實作可以利用 10 個 Clock Cycle 或 Unrolled Pipeline 完成：
+       std_init = 2^16 = 65536
+       for i in range(10):
+           std = (std + (var // max(std, 1))) // 2
+       
+    [Step 5] 正則化 (Normalization) 與 Scaling:
+       硬體計算常數 factor = 2^31 - 1
+       步驟一: 算出 factor 倍率 -> factor_div_std = factor // std
+       步驟二: 乘上資料 -> term = int64(factor_div_std) * int64(y_int)
+       步驟三: 右移與趨近於0的捨位除法 -> y_norm = term // 2
+       * (注意: Numpy 預設 -3 // 2 = -2，但 C/Verilog 是 -3 / 2 = -1，所以此處要模擬 C 行為)
+       
+    [Step 6] 加上 Bias:
+       out = y_norm + bias_int
+    """
+    x_val = x_int.astype(np.int32)
+    N = x_val.shape[-1]
+
+    # 1. 為了模擬 TVM 中 sum 累積時的 int16 型別轉換特性
+    sum_val = np.sum(x_val, axis=-1, keepdims=True)
+    sum_wrapped = sum_val.astype(np.int16).astype(np.int32)
+    
+    # 計算 Mean (truncated division towards zero)
+    mean_int = np.fix(sum_wrapped / N).astype(np.int32)
+
+    # 2. Center 過程同樣有 int16 特性
+    y_int = x_val - mean_int
+    y_int = y_int.astype(np.int16).astype(np.int32)
+
+    # 3. Square → 放入 uint32 累加 Variance
+    data_sq = (y_int.astype(np.int32) * y_int.astype(np.int32)).astype(np.uint32)
+    var = np.sum(data_sq, axis=-1, keepdims=True).astype(np.uint32)
+
+    # 4. Newton iteration for sqrt - 固定初始值為 65536
+    std = np.full_like(var, 2**16, dtype=np.uint32)
+    for _ in range(10):
+        safe_std = np.maximum(std, np.uint32(1))
+        # 向下取整除法
+        std = (std + var // safe_std) // np.uint32(2)
+
+    std_i32 = std.astype(np.int32)
+    std_safe = np.maximum(std_i32, np.int32(1))
+
+    # 5. Normalize: (factor / std) * data / 2
+    factor = np.int32(2**31 - 1)
+    factor_div_std = (factor // std_safe).astype(np.int32)
+
+    y_int32 = y_int.astype(np.int32)
+    
+    # 這裡會提升到 int64 來模擬硬體暫存器避免乘法溢位
+    term = factor_div_std.astype(np.int64) * y_int32.astype(np.int64)
+    # C++ truncated division by 2 towards zero
+    y_norm = np.where(term >= 0, term // 2, -((-term) // 2)).astype(np.int32)
+    
+    # 6. Add bias
+    output_int = y_norm + bias_int.astype(np.int32)
+    return output_int

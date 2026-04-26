@@ -1,0 +1,28 @@
+--- cmodel_rtl_reference/nonlinear_cmodel_reference.py
++++ cmodel_rtl_reference/nonlinear_cmodel_reference.py
+@@ -107,6 +107,7 @@
+     
+     # x0_int
+     x0_int = np.floor(-3.0 / scale_val).astype(np.int32)
++    x0_int = int(x0_int.item()) if isinstance(x0_int, np.ndarray) else int(x0_int)
+ 
+     x_algo = x_int.astype(np.int64)
+     
+@@ -155,6 +156,7 @@
+     # x0 計算
+     # -ln(2) / scale
+     x0_int = np.floor(-np.log(2) / scale_val).astype(np.int32)
++    x0_int = int(x0_int.item()) if isinstance(x0_int, np.ndarray) else int(x0_int)
+ 
+     pre_x_int = x_int.astype(np.int64)
+ 
+@@ -52,9 +54,6 @@
+     q = x_int // x0_int
+     r = x_int - x0_int * q
+ 
+-    if not np.issubdtype(r.dtype, np.integer):
+-        print("CRASH IN EXP! r type:", r.dtype, "q type:", q.dtype, "x0_int type:", type(x0_int), "x_int type:", x_int.dtype)
+-
+     # 基礎乘數
+     exp_int = (r >> 1) - x0_int
+     shift = n - q
