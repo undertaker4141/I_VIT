@@ -24,7 +24,7 @@ def main():
     # 如果 ImageNet 在其他位置，請修改為絕對路徑，例如:
     # imagenet_path = '/path/to/your/ImageNet'
     
-    batch_size = 128
+    batch_size = 64  # 降低 batch size 以避免 OOM (原本 128)
     lr = 5e-7
     epochs = 1
     
@@ -123,6 +123,10 @@ def main():
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
+            
+            # 釋放不需要的 GPU 記憶體
+            del outputs, loss
+            torch.cuda.empty_cache()
             
             if (batch_idx + 1) % 50 == 0:
                 elapsed = time.time() - start_time

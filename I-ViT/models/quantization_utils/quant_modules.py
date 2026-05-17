@@ -132,11 +132,12 @@ class QuantLinear(nn.Linear):
         if self.training:
             # STE: forward uses integer, backward uses float approximation
             x_float = x / prev_act_scaling_factor
-            output_float = F.linear(x_float, weight=self.weight_integer.float(), 
-                                   bias=self.bias_integer.float() if self.bias_integer is not None else None) \
-                          * bias_scaling_factor
+            with torch.no_grad():
+                output_float = F.linear(x_float, weight=self.weight_integer.float(), 
+                                       bias=self.bias_integer.float() if self.bias_integer is not None else None) \
+                              * bias_scaling_factor
             # Replace forward value with integer result, keep float gradient
-            output = output + (output_float - output_float.detach())
+            output = output_int32.float() * bias_scaling_factor + (output_float - output_float.detach())
         
         return output, bias_scaling_factor
 
@@ -396,10 +397,11 @@ class QuantConv2d(nn.Conv2d):
         # STE for training
         if self.training:
             x_float = x / pre_act_scaling_factor
-            output_float = F.conv2d(x_float, self.weight_integer.float(), 
-                                   self.bias_integer.float() if self.bias_integer is not None else None,
-                                   self.stride, self.padding, self.dilation, self.groups) * correct_output_scale
-            output = output + (output_float - output_float.detach())
+            with torch.no_grad():
+                output_float = F.conv2d(x_float, self.weight_integer.float(), 
+                                       self.bias_integer.float() if self.bias_integer is not None else None,
+                                       self.stride, self.padding, self.dilation, self.groups) * correct_output_scale
+            output = output_int32.float() * correct_output_scale + (output_float - output_float.detach())
         
         return output, correct_output_scale
 
