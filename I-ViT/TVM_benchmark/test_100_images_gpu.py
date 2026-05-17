@@ -27,7 +27,11 @@ transform = transforms.Compose([
 
 # Load dataset
 print("Step 1: 加載數據集...")
-imagenet_path = '/mnt/c/桌面/冠泓/大學/專題/I-ViT/I_VIT/ImageNet'
+# ImageNet 路徑 - 使用相對路徑（從 I_VIT/I-ViT/TVM_benchmark 目錄）
+imagenet_path = os.path.join('..', '..', '..', 'ImageNet')
+# 如果 ImageNet 在其他位置，請修改為絕對路徑，例如:
+# imagenet_path = '/path/to/your/ImageNet'
+
 dataset = datasets.ImageFolder(os.path.join(imagenet_path, 'val'), transform=transform)
 
 # Use 100 images

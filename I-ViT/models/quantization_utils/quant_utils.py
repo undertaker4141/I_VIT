@@ -44,6 +44,10 @@ def linear_quantize(input, scale, zero_point, is_weight):
         else:
             raise NotImplementedError
 
+    # 確保 scale 和 zero_point 在與 input 相同的設備上
+    scale = scale.to(input.device)
+    zero_point = zero_point.to(input.device)
+    
     # quantized = float / scale + zero_point
     return torch.round(1. / scale * input + zero_point)
 
@@ -155,7 +159,9 @@ def batch_frexp(inputs, max_bit=31):
     inputs: scaling factor
     return: (mantissa, exponent)
     """
-
+    
+    # 保存原始設備
+    original_device = inputs.device
     shape_of_input = inputs.size()
 
     # trans the input to be a 1-d tensor
@@ -171,8 +177,9 @@ def batch_frexp(inputs, max_bit=31):
 
     output_e = float(max_bit) - output_e
 
-    return torch.from_numpy(output_m).view(shape_of_input), \
-           torch.from_numpy(output_e).view(shape_of_input)
+    # 返回到原始設備
+    return torch.from_numpy(output_m).view(shape_of_input).to(original_device), \
+           torch.from_numpy(output_e).view(shape_of_input).to(original_device)
 
 
 class fixedpoint_mul(Function):

@@ -94,11 +94,15 @@ class QuantLinear(nn.Linear):
         # This ensures training and inference use the same numerical computation
         prev_act_scaling_factor = prev_act_scaling_factor.view(1, -1)
         
+        # 確保 bias_scaling_factor 在正確的設備上
+        bias_scaling_factor = bias_scaling_factor.to(x.device)
+        
         # Quantize input to int8 (simulate TVM behavior)
         x_int8 = torch.round(x / prev_act_scaling_factor).clamp(-128, 127)
         
         # Integer matrix multiplication (int8 @ int8 -> int32)
         # Use int32 to avoid overflow during matmul
+        # Note: CUDA doesn't support int32 matmul, so we use float and convert back
         x_int32 = x_int8.to(torch.int32)
         weight_int32 = self.weight_integer.to(torch.int32)
         
@@ -108,7 +112,8 @@ class QuantLinear(nn.Linear):
             x_int32 = x_int32.reshape(-1, original_shape[-1])
         
         # Integer matmul: [batch, in_features] @ [out_features, in_features].T
-        output_int32 = torch.matmul(x_int32, weight_int32.t())
+        # CUDA doesn't support int32 matmul, so convert to float, compute, then back to int32
+        output_int32 = torch.matmul(x_int32.float(), weight_int32.t().float()).round().to(torch.int32)
         
         # Add bias (int32 + int32)
         if self.bias_integer is not None:
@@ -364,6 +369,9 @@ class QuantConv2d(nn.Conv2d):
         # 🔥 MODIFIED: Use integer-only computation to match TVM qnn.conv2d
         pre_act_scaling_factor = pre_act_scaling_factor.view(1, -1, 1, 1)
         
+        # 確保 bias_scaling_factor 在正確的設備上
+        bias_scaling_factor = bias_scaling_factor.to(x.device)
+        
         # Quantize input to int8
         x_int8 = torch.round(x / pre_act_scaling_factor).clamp(-128, 127)
         
@@ -424,7 +432,7 @@ class IntLayerNorm(nn.LayerNorm):
 
     def forward(self, x, scaling_factor=None):
         if self.dim_sqrt is None:
-            n = torch.tensor(x.shape[2], dtype=torch.float)
+            n = torch.tensor(x.shape[2], dtype=torch.float, device=x.device)
             self.dim_sqrt = torch.sqrt(n)
 
         # Normalization: computes mean and variance(std)
@@ -513,7 +521,7 @@ class IntGELU(nn.Module):
         exp_int_sum.clamp_max_(2**31-1)
         factor = floor_ste.apply((2 ** 31-1) / exp_int_sum)
         sigmoid_int = floor_ste.apply(exp_int * factor / 2 ** (31-self.output_bit+1))
-        sigmoid_scaling_factor = torch.Tensor([1 / 2 ** (self.output_bit-1)])
+        sigmoid_scaling_factor = torch.tensor([1 / 2 ** (self.output_bit-1)], device=x.device, dtype=x.dtype)
 
         x_int = pre_x_int * sigmoid_int
         scaling_factor = scaling_factor * sigmoid_scaling_factor
@@ -567,7 +575,7 @@ class IntSoftmax(nn.Module):
         exp_int_sum.clamp_max_(2**31-1)
         factor = floor_ste.apply((2**31-1) / exp_int_sum)
         exp_int = floor_ste.apply(exp_int * factor / 2 ** (31-self.output_bit+1))
-        scaling_factor = torch.Tensor([1 / 2 ** (self.output_bit-1)])
+        scaling_factor = torch.tensor([1 / 2 ** (self.output_bit-1)], device=x.device, dtype=x.dtype)
 
         self.act_scaling_factor = scaling_factor
         return exp_int * scaling_factor, scaling_factor

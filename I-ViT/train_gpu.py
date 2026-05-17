@@ -19,7 +19,11 @@ def main():
     print()
     
     # Config
-    imagenet_path = '/mnt/c/桌面/冠泓/大學/專題/I-ViT/I_VIT/ImageNet'
+    # ImageNet 路徑 - 使用相對路徑（從 I_VIT 根目錄）
+    imagenet_path = os.path.join('..', 'ImageNet')
+    # 如果 ImageNet 在其他位置，請修改為絕對路徑，例如:
+    # imagenet_path = '/path/to/your/ImageNet'
+    
     batch_size = 128
     lr = 5e-7
     epochs = 1
@@ -199,7 +203,7 @@ def main():
     print("Next steps:")
     print("  1. cd TVM_benchmark")
     print("  2. python convert_model.py --model-path ../output_gpu/checkpoint.pth --params-path . --depth 12")
-    print("  3. python generate_calibrated_scales.py --model-path '../output_gpu/checkpoint.pth' --output calibrated_scales_gpu.npy --image '/mnt/c/桌面/冠泓/大學/專題/I-ViT/I_VIT/data/test_image.JPEG'")
+    print("  3. python generate_calibrated_scales.py --model-path '../output_gpu/checkpoint.pth' --output calibrated_scales_gpu.npy --image '../../data/test_image.JPEG'")
     print("  4. python test_100_images_gpu.py")
     print()
 
