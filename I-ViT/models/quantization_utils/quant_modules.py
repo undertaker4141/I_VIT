@@ -124,20 +124,17 @@ class QuantLinear(nn.Linear):
             output_int32 = output_int32.reshape(*original_shape[:-1], -1)
         
         # Dequantize: int32 -> float32
-        # Use .detach() for integer operations, then allow gradients for scaling
-        output = output_int32.detach().float() * bias_scaling_factor
+        # STE: forward uses integer, backward uses float approximation
+        output = output_int32.float() * bias_scaling_factor
         
-        # For backward pass, we need to use Straight-Through Estimator (STE)
-        # The gradient flows through as if we did floating-point computation
         if self.training:
-            # STE: forward uses integer, backward uses float approximation
+            # Compute float version for gradient
             x_float = x / prev_act_scaling_factor
-            with torch.no_grad():
-                output_float = F.linear(x_float, weight=self.weight_integer.float(), 
-                                       bias=self.bias_integer.float() if self.bias_integer is not None else None) \
-                              * bias_scaling_factor
-            # Replace forward value with integer result, keep float gradient
-            output = output_int32.float() * bias_scaling_factor + (output_float - output_float.detach())
+            output_float = F.linear(x_float, weight=self.weight_integer.float(), 
+                                   bias=self.bias_integer.float() if self.bias_integer is not None else None) \
+                          * bias_scaling_factor
+            # STE: use integer result in forward, but gradient from float computation
+            output = output + (output_float - output_float.detach())
         
         return output, bias_scaling_factor
 
@@ -392,16 +389,16 @@ class QuantConv2d(nn.Conv2d):
         
         # Dequantize
         correct_output_scale = bias_scaling_factor.view(1, -1, 1, 1)
-        output = output_int32.detach().float() * correct_output_scale
+        output = output_int32.float() * correct_output_scale
         
         # STE for training
         if self.training:
             x_float = x / pre_act_scaling_factor
-            with torch.no_grad():
-                output_float = F.conv2d(x_float, self.weight_integer.float(), 
-                                       self.bias_integer.float() if self.bias_integer is not None else None,
-                                       self.stride, self.padding, self.dilation, self.groups) * correct_output_scale
-            output = output_int32.float() * correct_output_scale + (output_float - output_float.detach())
+            output_float = F.conv2d(x_float, self.weight_integer.float(), 
+                                   self.bias_integer.float() if self.bias_integer is not None else None,
+                                   self.stride, self.padding, self.dilation, self.groups) * correct_output_scale
+            # STE: use integer result in forward, but gradient from float computation
+            output = output + (output_float - output_float.detach())
         
         return output, correct_output_scale
 
