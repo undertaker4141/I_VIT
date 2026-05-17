@@ -28,6 +28,10 @@ def main():
     lr = 5e-7
     epochs = 1
     
+    # 設定更積極的記憶體管理
+    torch.backends.cudnn.benchmark = False  # 減少記憶體使用
+    torch.backends.cudnn.deterministic = True
+    
     # Check GPU
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f"Device: {device}")
@@ -63,11 +67,14 @@ def main():
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, [train_size, val_size])
     
-    num_workers = 4 if device == 'cuda' else 0
+    # 減少 num_workers 以降低記憶體使用
+    num_workers = 2 if device == 'cuda' else 0
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, 
-                             num_workers=num_workers, pin_memory=(device=='cuda'))
+                             num_workers=num_workers, pin_memory=(device=='cuda'),
+                             persistent_workers=(num_workers > 0))
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, 
-                           num_workers=num_workers, pin_memory=(device=='cuda'))
+                           num_workers=num_workers, pin_memory=(device=='cuda'),
+                           persistent_workers=(num_workers > 0))
     
     print(f"  Train samples: {len(train_dataset)}")
     print(f"  Val samples: {len(val_dataset)}")
@@ -87,7 +94,13 @@ def main():
     model = model.to(device)
     model.train()
     
+    # 清理載入模型後的記憶體
+    if device == 'cuda':
+        torch.cuda.empty_cache()
+    
     print("  Model loaded and moved to", device)
+    if device == 'cuda':
+        print(f"  GPU Memory after model load: {torch.cuda.memory_allocated(0)/1e9:.2f}GB")
     print()
     
     # Optimizer and loss
@@ -96,6 +109,7 @@ def main():
     
     # Training
     print(f"Starting training for {epochs} epoch(s)...")
+    print(f"Total batches: {len(train_loader)} (batch_size={batch_size})")
     print()
     
     for epoch in range(epochs):
@@ -126,14 +140,30 @@ def main():
             
             # 釋放不需要的 GPU 記憶體
             del outputs, loss
-            torch.cuda.empty_cache()
+            if device == 'cuda':
+                torch.cuda.empty_cache()
             
-            if (batch_idx + 1) % 50 == 0:
+            # 每 10 個 batch 輸出一次進度（更頻繁的更新）
+            if (batch_idx + 1) % 10 == 0 or (batch_idx + 1) == 1:
                 elapsed = time.time() - start_time
-                print(f"  Batch [{batch_idx+1}/{len(train_loader)}] "
+                avg_time_per_batch = elapsed / (batch_idx + 1)
+                remaining_batches = len(train_loader) - (batch_idx + 1)
+                eta = avg_time_per_batch * remaining_batches
+                
+                # 顯示 GPU 記憶體使用情況
+                if device == 'cuda':
+                    mem_allocated = torch.cuda.memory_allocated(0) / 1e9
+                    mem_reserved = torch.cuda.memory_reserved(0) / 1e9
+                    mem_info = f"GPU: {mem_allocated:.2f}GB/{mem_reserved:.2f}GB"
+                else:
+                    mem_info = ""
+                
+                print(f"  [{batch_idx+1}/{len(train_loader)}] "
                       f"Loss: {train_loss/(batch_idx+1):.4f} "
                       f"Acc: {100.*correct/total:.2f}% "
-                      f"Time: {elapsed:.1f}s")
+                      f"Time: {elapsed:.0f}s "
+                      f"ETA: {eta/60:.1f}min "
+                      f"{mem_info}", flush=True)
         
         train_acc = 100. * correct / total
         epoch_time = time.time() - start_time
