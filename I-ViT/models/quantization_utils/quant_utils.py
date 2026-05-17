@@ -85,7 +85,7 @@ class SymmetricQuantFunction(Function):
 
         scale = specified_scale
 
-        zero_point = torch.tensor(0.).cuda()
+        zero_point = torch.tensor(0.)
 
         n = 2 ** (k - 1) - 1
         new_quant_x = linear_quantize(x, scale, zero_point, is_weight=is_weight)
@@ -171,8 +171,8 @@ def batch_frexp(inputs, max_bit=31):
 
     output_e = float(max_bit) - output_e
 
-    return torch.from_numpy(output_m).cuda().view(shape_of_input), \
-           torch.from_numpy(output_e).cuda().view(shape_of_input)
+    return torch.from_numpy(output_m).view(shape_of_input), \
+           torch.from_numpy(output_e).view(shape_of_input)
 
 
 class fixedpoint_mul(Function):

@@ -18,8 +18,9 @@ def Q_Block(data,
 
     ## layer_norm
     qconfig0 = layers.get_qconfig(name + '_qconfig_norm1')
-    norm1_bias = relay.var(name + '_norm1_bias', shape=[dim], dtype='int32')
+    norm1_bias = relay.var(name + '_norm1_bias', shape=[dim], dtype='int64')
     norm1 = layers.quantized_layernorm(data, norm1_bias)
+
 
     ## attention
     qconfig1 = layers.get_qconfig(name + '_qconfig_qkv')
@@ -112,7 +113,7 @@ def Q_Block(data,
     shortcut = add1
     ## layer_norm
     qconfig7 = layers.get_qconfig(name + '_qconfig_norm2')
-    norm2_bias = relay.var(name + '_norm2_bias', shape=[dim], dtype='int32')
+    norm2_bias = relay.var(name + '_norm2_bias', shape=[dim], dtype='int64')
     norm2 = layers.quantized_layernorm(add1, norm2_bias)
 
     ## dense
@@ -159,7 +160,7 @@ def Q_Block(data,
                                  add_bias=True)
     fc2 = relay.reshape(fc2, [-4,batch_size,-1,-2])
     
-    ## shortcut
+    ## shortcut (add2: fc2 output + add1 output)
     qconfig11 = layers.get_qconfig(name + '_qconfig_add2')
     req11 = layers.requantize(fc2,
                               input_scale=qconfig10.output_scale,
@@ -246,7 +247,7 @@ def Q_VisionTransformer(data_shape,
 
 
     qconfig_norm = layers.get_qconfig('qconfig_norm')
-    norm_bias = relay.var('norm_bias', shape=[embed_dim], dtype='int32')
+    norm_bias = relay.var('norm_bias', shape=[embed_dim], dtype='int64')
     norm = layers.quantized_layernorm(body, norm_bias)
 
     body = relay.split(norm, 197, axis=1)

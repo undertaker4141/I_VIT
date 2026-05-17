@@ -131,6 +131,8 @@ class QuantizeInitializer(Initializer):
     def _init_bias(self, name, arr):
         if arr.dtype == np.int32:
             arr[:] = np.random.randint(-200, 200, size=arr.shape)
+        elif arr.dtype == np.int64:
+            arr[:] = np.random.randint(-200, 200, size=arr.shape)
         elif arr.dtype == np.float32:
             arr[:] = np.random.uniform(-1., 1., size=arr.shape)
         else:

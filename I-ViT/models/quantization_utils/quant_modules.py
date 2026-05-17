@@ -90,11 +90,50 @@ class QuantLinear(nn.Linear):
         else:
             self.bias_integer = None
 
+        # 🔥 MODIFIED: Use integer-only computation to match TVM qnn.dense
+        # This ensures training and inference use the same numerical computation
         prev_act_scaling_factor = prev_act_scaling_factor.view(1, -1)
-        x_int = x / prev_act_scaling_factor
-
-        return F.linear(x_int, weight=self.weight_integer, bias=self.bias_integer) \
-               * bias_scaling_factor, bias_scaling_factor
+        
+        # Quantize input to int8 (simulate TVM behavior)
+        x_int8 = torch.round(x / prev_act_scaling_factor).clamp(-128, 127)
+        
+        # Integer matrix multiplication (int8 @ int8 -> int32)
+        # Use int32 to avoid overflow during matmul
+        x_int32 = x_int8.to(torch.int32)
+        weight_int32 = self.weight_integer.to(torch.int32)
+        
+        # Reshape for batch processing
+        original_shape = x_int32.shape
+        if len(original_shape) > 2:
+            x_int32 = x_int32.reshape(-1, original_shape[-1])
+        
+        # Integer matmul: [batch, in_features] @ [out_features, in_features].T
+        output_int32 = torch.matmul(x_int32, weight_int32.t())
+        
+        # Add bias (int32 + int32)
+        if self.bias_integer is not None:
+            output_int32 = output_int32 + self.bias_integer.to(torch.int32)
+        
+        # Reshape back if needed
+        if len(original_shape) > 2:
+            output_int32 = output_int32.reshape(*original_shape[:-1], -1)
+        
+        # Dequantize: int32 -> float32
+        # Use .detach() for integer operations, then allow gradients for scaling
+        output = output_int32.detach().float() * bias_scaling_factor
+        
+        # For backward pass, we need to use Straight-Through Estimator (STE)
+        # The gradient flows through as if we did floating-point computation
+        if self.training:
+            # STE: forward uses integer, backward uses float approximation
+            x_float = x / prev_act_scaling_factor
+            output_float = F.linear(x_float, weight=self.weight_integer.float(), 
+                                   bias=self.bias_integer.float() if self.bias_integer is not None else None) \
+                          * bias_scaling_factor
+            # Replace forward value with integer result, keep float gradient
+            output = output + (output_float - output_float.detach())
+        
+        return output, bias_scaling_factor
 
 
 class QuantAct(nn.Module):
@@ -322,12 +361,39 @@ class QuantConv2d(nn.Conv2d):
         self.bias_integer = self.weight_function(
             self.bias, self.bias_bit, bias_scaling_factor, True)
 
+        # 🔥 MODIFIED: Use integer-only computation to match TVM qnn.conv2d
         pre_act_scaling_factor = pre_act_scaling_factor.view(1, -1, 1, 1)
-        x_int = x / pre_act_scaling_factor
+        
+        # Quantize input to int8
+        x_int8 = torch.round(x / pre_act_scaling_factor).clamp(-128, 127)
+        
+        # Integer convolution (int8 @ int8 -> int32)
+        x_int8_for_conv = x_int8.to(torch.int8)
+        weight_int8 = self.weight_integer.to(torch.int8)
+        bias_int32 = self.bias_integer.to(torch.int32) if self.bias_integer is not None else None
+        
+        # PyTorch conv2d with int8 inputs will automatically promote to int32 output
+        output_int32 = F.conv2d(x_int8_for_conv.float(), weight_int8.float(), None,
+                               self.stride, self.padding, self.dilation, self.groups)
+        output_int32 = torch.round(output_int32).to(torch.int32)
+        
+        # Add bias
+        if bias_int32 is not None:
+            output_int32 = output_int32 + bias_int32.view(1, -1, 1, 1)
+        
+        # Dequantize
         correct_output_scale = bias_scaling_factor.view(1, -1, 1, 1)
-
-        return (F.conv2d(x_int, self.weight_integer, self.bias_integer, self.stride, self.padding,
-                         self.dilation, self.groups) * correct_output_scale, correct_output_scale)
+        output = output_int32.detach().float() * correct_output_scale
+        
+        # STE for training
+        if self.training:
+            x_float = x / pre_act_scaling_factor
+            output_float = F.conv2d(x_float, self.weight_integer.float(), 
+                                   self.bias_integer.float() if self.bias_integer is not None else None,
+                                   self.stride, self.padding, self.dilation, self.groups) * correct_output_scale
+            output = output + (output_float - output_float.detach())
+        
+        return output, correct_output_scale
 
 
 class IntLayerNorm(nn.LayerNorm):
@@ -359,7 +425,7 @@ class IntLayerNorm(nn.LayerNorm):
     def forward(self, x, scaling_factor=None):
         if self.dim_sqrt is None:
             n = torch.tensor(x.shape[2], dtype=torch.float)
-            self.dim_sqrt = torch.sqrt(n).cuda()
+            self.dim_sqrt = torch.sqrt(n)
 
         # Normalization: computes mean and variance(std)
         x_int = x / scaling_factor
@@ -447,7 +513,7 @@ class IntGELU(nn.Module):
         exp_int_sum.clamp_max_(2**31-1)
         factor = floor_ste.apply((2 ** 31-1) / exp_int_sum)
         sigmoid_int = floor_ste.apply(exp_int * factor / 2 ** (31-self.output_bit+1))
-        sigmoid_scaling_factor = torch.Tensor([1 / 2 ** (self.output_bit-1)]).cuda()
+        sigmoid_scaling_factor = torch.Tensor([1 / 2 ** (self.output_bit-1)])
 
         x_int = pre_x_int * sigmoid_int
         scaling_factor = scaling_factor * sigmoid_scaling_factor
@@ -501,7 +567,7 @@ class IntSoftmax(nn.Module):
         exp_int_sum.clamp_max_(2**31-1)
         factor = floor_ste.apply((2**31-1) / exp_int_sum)
         exp_int = floor_ste.apply(exp_int * factor / 2 ** (31-self.output_bit+1))
-        scaling_factor = torch.Tensor([1 / 2 ** (self.output_bit-1)]).cuda()
+        scaling_factor = torch.Tensor([1 / 2 ** (self.output_bit-1)])
 
         self.act_scaling_factor = scaling_factor
         return exp_int * scaling_factor, scaling_factor

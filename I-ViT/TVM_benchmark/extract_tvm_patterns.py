@@ -372,7 +372,7 @@ def main():
     # Step 1: Load checkpoint and QConfig
     # ==========================================================
     print("\n[1/6] Loading checkpoint...")
-    ckpt = torch.load(args.checkpoint, map_location='cpu')
+    ckpt = torch.load(args.checkpoint, map_location='cpu', weights_only=False)
     model_state = ckpt['model'] if 'model' in ckpt else ckpt
     print(f"  {len(model_state)} keys loaded")
 

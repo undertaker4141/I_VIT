@@ -328,24 +328,31 @@ def quantized_matmul(x, y,
 
 def quantized_layernorm(data, 
                         bias_int):
-    mean = relay.mean(data, axis=2, keepdims=True)
-    data = data - mean
+    data_32 = relay.cast(data, 'int32')
+    # PyTorch uses float mean then round, which is equivalent to (sum + dim//2) // dim for positive
+    # For now, keep TVM's mean but we must fix the variance overflow.
+    mean = relay.mean(data_32, axis=2, keepdims=True)
+    data = data_32 - mean
 
-    data = relay.cast(data, 'int32')
-    data_sq = data * data
+    # Cast to int64 before squaring to avoid overflow when summing 192 elements of int32^2
+    data_64 = relay.cast(data, 'int64')
+    data_sq = data_64 * data_64
 
-    data_sq = relay.cast(data_sq, 'uint32')
     var = relay.sum(data_sq, axis=2, keepdims=True)
 
-    std = relay.const(2 ** 16, 'uint32')
+    std = relay.const(2 ** 16, 'int64')
     for _ in range(10):
-        tmp = (std + var/std)/relay.const(2, 'uint32')
+        tmp = (std + var/std)/relay.const(2, 'int64')
         std = tmp
-    std = relay.cast(std, 'int32')
+    
+    std = relay.maximum(std, relay.const(1, 'int64'))
 
-    factor = relay.const(2**31-1, 'int32')
-    data =  (factor / std) * data / relay.const(2, 'int32')
-    data = data + bias_int
+    factor = relay.const(2**31-1, 'int64')
+    data_64 = (factor / std) * data_64 / relay.const(2, 'int64')
+    
+    # We do NOT cast data_64 to int32 here, because PyTorch bias values can cause overflow!
+    bias_64 = relay.cast(bias_int, 'int64')
+    data = data_64 + bias_64
 
     return data
 
@@ -377,11 +384,17 @@ def quantized_softmax(data, input_scale):
     exp_int = shift_exp(data, input_scale, 16)
 
     exp_int_sum = relay.sum(exp_int, axis=-1, keepdims=True)
-    factor = relay.const(2**31-1, 'int32')
-    # exp_int = (factor/exp_int_sum) * exp_int / relay.const(2 ** 24, 'int32')
-    exp_int = relay.right_shift((factor/exp_int_sum) * exp_int, relay.const(24, dtype='int32'))
+    exp_int_sum = relay.maximum(exp_int_sum, relay.const(1, 'int32'))
+    
+    # Transition to 64-bit to prevent overflow during (factor / sum) * exp_int
+    factor_64 = relay.const(2**31-1, 'int64')
+    exp_int_sum_64 = relay.cast(exp_int_sum, 'int64')
+    exp_int_64 = relay.cast(exp_int, 'int64')
+    
+    res_64 = (factor_64 / exp_int_sum_64) * exp_int_64
+    exp_int_32 = relay.cast(relay.right_shift(res_64, relay.const(24, 'int64')), 'int32')
 
-    exp_int = relay.cast(exp_int, 'int8')
+    exp_int = relay.cast(exp_int_32, 'int8')
 
     return exp_int
 
@@ -394,10 +407,15 @@ def quantized_gelu(pre_data, input_scale):
     exp_int = shift_exp(data, input_scale* 1.702, 23)
     exp_int_max = shift_exp(-data_max, input_scale* 1.702, 23)
     exp_int_sum = exp_int + exp_int_max
+    exp_int_sum = relay.maximum(exp_int_sum, relay.const(1, 'int32'))
 
-    factor = relay.const(2**31-1, 'int32')
-    # sigmoid_int = (factor/exp_int_sum) * exp_int / relay.const(2 ** 24, 'int32')
-    sigmoid_int = relay.right_shift((factor/exp_int_sum) * exp_int, relay.const(24, dtype='int32'))
+    # Transition to 64-bit to prevent overflow
+    factor_64 = relay.const(2**31-1, 'int64')
+    exp_int_sum_64 = relay.cast(exp_int_sum, 'int64')
+    exp_int_64 = relay.cast(exp_int, 'int64')
+    
+    res_64 = (factor_64 / exp_int_sum_64) * exp_int_64
+    sigmoid_int = relay.cast(relay.right_shift(res_64, relay.const(24, 'int64')), 'int32')
 
     gelu = pre_data * sigmoid_int
 
