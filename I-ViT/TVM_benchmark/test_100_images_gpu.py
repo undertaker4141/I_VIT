@@ -16,6 +16,9 @@ print("測試 GPU 訓練模型 - 100 張圖片")
 print("="*80)
 print()
 
+# 🔥 FIX: 保存原始工作目錄
+original_cwd = os.getcwd()
+
 # Data transforms
 transform = transforms.Compose([
     transforms.Resize(256),
@@ -27,10 +30,34 @@ transform = transforms.Compose([
 
 # Load dataset
 print("Step 1: 加載數據集...")
-# ImageNet 路徑 - 使用相對路徑（從 I_VIT/I-ViT/TVM_benchmark 目錄）
-imagenet_path = os.path.join('..', '..', '..', 'ImageNet')
-# 如果 ImageNet 在其他位置，請修改為絕對路徑，例如:
-# imagenet_path = '/path/to/your/ImageNet'
+
+# 🔥 支持環境變量覆蓋路徑
+if 'IMAGENET_PATH' in os.environ:
+    imagenet_path = os.environ['IMAGENET_PATH']
+    print(f"  使用環境變量 IMAGENET_PATH: {imagenet_path}")
+else:
+    # ImageNet 路徑 - 使用相對路徑（從 I_VIT/I-ViT/TVM_benchmark 目錄）
+    # 目錄結構: I_VIT/I-ViT/TVM_benchmark -> I_VIT/ImageNet
+    imagenet_path = os.path.join('..', '..', 'ImageNet')  # 🔥 FIX: 修正為兩層 ../..
+    # 如果 ImageNet 在其他位置，請修改為絕對路徑，例如:
+    # imagenet_path = '/path/to/your/ImageNet'
+    
+    # 🔥 FIX: 在改變目錄前先解析為絕對路徑
+    imagenet_path = os.path.abspath(imagenet_path)
+    print(f"  ImageNet 路徑: {imagenet_path}")
+
+# 檢查路徑是否存在
+if not os.path.exists(os.path.join(imagenet_path, 'val')):
+    print(f"  ❌ 錯誤: ImageNet val 目錄不存在")
+    print(f"  查找路徑: {os.path.join(imagenet_path, 'val')}")
+    print()
+    print("  請檢查:")
+    print("    1. ImageNet 是否在正確位置？")
+    print("    2. 執行以下命令查找 ImageNet:")
+    print("       find ~ -name 'ImageNet' -type d 2>/dev/null")
+    print()
+    print("  如果 ImageNet 在其他位置，請修改腳本第 32 行的 imagenet_path")
+    sys.exit(1)
 
 dataset = datasets.ImageFolder(os.path.join(imagenet_path, 'val'), transform=transform)
 
@@ -48,7 +75,9 @@ os.chdir('..')
 sys.path.insert(0, os.getcwd())
 from models.vit_quant import deit_tiny_patch16_224
 
-checkpoint = torch.load('output_gpu/checkpoint.pth', map_location='cpu', weights_only=False)
+# 使用絕對路徑加載 checkpoint
+checkpoint_path = os.path.join(original_cwd, '..', 'output_gpu', 'checkpoint.pth')
+checkpoint = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
 model_dict = checkpoint['model'] if 'model' in checkpoint else checkpoint
 pt_model = deit_tiny_patch16_224(pretrained=False)
 ms = pt_model.state_dict()
@@ -75,7 +104,7 @@ print()
 
 # Build TVM model
 print("Step 3: 構建 TVM 模型...")
-os.chdir('TVM_benchmark')
+os.chdir(os.path.join(original_cwd))  # 回到 TVM_benchmark 目錄
 sys.path.pop(0)
 for k in [k for k in sys.modules if k.startswith('models')]:
     del sys.modules[k]
@@ -85,7 +114,9 @@ from tvm import relay
 import models.build_model as build_model
 import convert_model
 
-convert_model.load_qconfig(model_dict, 12, calib_scales_file='calibrated_scales_gpu.npy')
+# 使用絕對路徑加載 calibrated scales
+calib_scales_path = os.path.join(original_cwd, 'calibrated_scales_gpu.npy')
+convert_model.load_qconfig(model_dict, 12, calib_scales_file=calib_scales_path)
 
 func, _ = build_model.get_workload(
     name='deit_tiny_patch16_224',
@@ -93,7 +124,9 @@ func, _ = build_model.get_workload(
     dtype='int8', data_layout='NCHW', kernel_layout='OIHW',
 )
 
-pretrained_params = np.load('params.npy', allow_pickle=True)[()]
+# 使用絕對路徑加載 params
+params_path = os.path.join(original_cwd, 'params.npy')
+pretrained_params = np.load(params_path, allow_pickle=True)[()]
 
 print("  編譯中...")
 t0 = time.time()
@@ -143,6 +176,18 @@ for idx, (img, target) in enumerate(test_loader):
     tvm_pred = np.argmax(tvm_probs)
     tvm_top5 = np.argsort(tvm_probs)[::-1][:5]
     
+    # 🔥 DEBUG: 在第一張圖片時輸出詳細信息
+    if idx == 0:
+        print(f"\n  [DEBUG] 第一張圖片:")
+        print(f"    Target: {target}")
+        print(f"    PyTorch pred: {pt_pred}, probs[{pt_pred}]={pt_probs[pt_pred]:.4f}")
+        print(f"    TVM pred: {tvm_pred}, probs[{tvm_pred}]={tvm_probs[tvm_pred]:.4f}")
+        print(f"    TVM probs range: [{tvm_probs.min():.4f}, {tvm_probs.max():.4f}]")
+        print(f"    TVM probs sum: {tvm_probs.sum():.4f}")
+        print(f"    TVM top5 preds: {tvm_top5}")
+        print(f"    TVM top5 probs: {[tvm_probs[i] for i in tvm_top5]}")
+        print()
+    
     # Check accuracy
     if pt_pred == target:
         pt_correct += 1
@@ -181,7 +226,11 @@ print(f"  兩者都正確: {both_correct}/100 = {both_correct}%")
 print()
 
 # Save results
-with open('../output_gpu/test_results.txt', 'w') as f:
+output_dir = os.path.join(original_cwd, '..', 'output_gpu')
+os.makedirs(output_dir, exist_ok=True)
+results_path = os.path.join(output_dir, 'test_results.txt')
+
+with open(results_path, 'w') as f:
     f.write(f"Test Results (100 images)\n")
     f.write(f"=========================\n\n")
     f.write(f"PyTorch:\n")
@@ -226,5 +275,5 @@ else:
 print()
 print(f"PyTorch vs TVM 差距: {pt_correct - tvm_correct}%")
 print()
-print("結果已保存到: output_gpu/test_results.txt")
+print(f"結果已保存到: {results_path}")
 print("="*80)

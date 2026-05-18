@@ -26,7 +26,7 @@ def main():
     
     batch_size = 64  # 降低 batch size 以避免 OOM (原本 128)
     lr = 5e-7
-    epochs = 1
+    epochs = 30  # 🔥 增加到 30 epochs（論文推薦）
     
     # 設定更積極的記憶體管理
     torch.backends.cudnn.benchmark = False  # 減少記憶體使用

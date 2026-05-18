@@ -1,0 +1,917 @@
+================================================================================
+模型權重報告
+================================================================================
+
+cls_token:
+  Shape: (1, 1, 192)
+  Dtype: float32
+  Range: [-1.086793, 6.929528]
+  Params: 192
+
+pos_embed:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-4.544291, 6.882215]
+  Params: 37824
+
+patch_embed.proj.weight:
+  Shape: (192, 3, 16, 16)
+  Dtype: float32
+  Range: [-0.296541, 0.258504]
+  Params: 147456
+
+patch_embed.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-2.160938, 2.742467]
+  Params: 192
+
+blocks.0.norm1.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.333997, 1.779198]
+  Params: 192
+
+blocks.0.norm1.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.053842, 0.951175]
+  Params: 192
+
+blocks.0.attn.qkv.weight:
+  Shape: (576, 192)
+  Dtype: float32
+  Range: [-0.499227, 0.555319]
+  Params: 110592
+
+blocks.0.attn.qkv.bias:
+  Shape: (576,)
+  Dtype: float32
+  Range: [-2.495253, 2.618638]
+  Params: 576
+
+blocks.0.attn.proj.weight:
+  Shape: (192, 192)
+  Dtype: float32
+  Range: [-0.326486, 0.387071]
+  Params: 36864
+
+blocks.0.attn.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.328816, 2.722581]
+  Params: 192
+
+blocks.0.norm2.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.000337, 2.629319]
+  Params: 192
+
+blocks.0.norm2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.325873, 1.432187]
+  Params: 192
+
+blocks.0.mlp.fc1.weight:
+  Shape: (768, 192)
+  Dtype: float32
+  Range: [-0.560125, 0.407309]
+  Params: 147456
+
+blocks.0.mlp.fc1.bias:
+  Shape: (768,)
+  Dtype: float32
+  Range: [-2.093727, 0.663089]
+  Params: 768
+
+blocks.0.mlp.fc2.weight:
+  Shape: (192, 768)
+  Dtype: float32
+  Range: [-0.418782, 0.431324]
+  Params: 147456
+
+blocks.0.mlp.fc2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.957942, 3.081804]
+  Params: 192
+
+blocks.1.norm1.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.000465, 1.405981]
+  Params: 192
+
+blocks.1.norm1.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-2.550262, 1.366150]
+  Params: 192
+
+blocks.1.attn.qkv.weight:
+  Shape: (576, 192)
+  Dtype: float32
+  Range: [-0.677397, 0.593687]
+  Params: 110592
+
+blocks.1.attn.qkv.bias:
+  Shape: (576,)
+  Dtype: float32
+  Range: [-2.388651, 2.321666]
+  Params: 576
+
+blocks.1.attn.proj.weight:
+  Shape: (192, 192)
+  Dtype: float32
+  Range: [-0.317220, 0.264045]
+  Params: 36864
+
+blocks.1.attn.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.177685, 1.095557]
+  Params: 192
+
+blocks.1.norm2.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.455952, 1.742905]
+  Params: 192
+
+blocks.1.norm2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.381304, 1.104747]
+  Params: 192
+
+blocks.1.mlp.fc1.weight:
+  Shape: (768, 192)
+  Dtype: float32
+  Range: [-0.477651, 0.356138]
+  Params: 147456
+
+blocks.1.mlp.fc1.bias:
+  Shape: (768,)
+  Dtype: float32
+  Range: [-2.575367, 0.324389]
+  Params: 768
+
+blocks.1.mlp.fc2.weight:
+  Shape: (192, 768)
+  Dtype: float32
+  Range: [-0.413024, 0.423895]
+  Params: 147456
+
+blocks.1.mlp.fc2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.888587, 0.638695]
+  Params: 192
+
+blocks.2.norm1.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.479795, 1.392586]
+  Params: 192
+
+blocks.2.norm1.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-2.693158, 1.211867]
+  Params: 192
+
+blocks.2.attn.qkv.weight:
+  Shape: (576, 192)
+  Dtype: float32
+  Range: [-0.402892, 0.446382]
+  Params: 110592
+
+blocks.2.attn.qkv.bias:
+  Shape: (576,)
+  Dtype: float32
+  Range: [-1.665077, 2.514015]
+  Params: 576
+
+blocks.2.attn.proj.weight:
+  Shape: (192, 192)
+  Dtype: float32
+  Range: [-0.206965, 0.218699]
+  Params: 36864
+
+blocks.2.attn.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.705268, 0.758629]
+  Params: 192
+
+blocks.2.norm2.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.277860, 1.840714]
+  Params: 192
+
+blocks.2.norm2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.494401, 0.755822]
+  Params: 192
+
+blocks.2.mlp.fc1.weight:
+  Shape: (768, 192)
+  Dtype: float32
+  Range: [-0.464460, 0.354437]
+  Params: 147456
+
+blocks.2.mlp.fc1.bias:
+  Shape: (768,)
+  Dtype: float32
+  Range: [-2.256187, 0.426979]
+  Params: 768
+
+blocks.2.mlp.fc2.weight:
+  Shape: (192, 768)
+  Dtype: float32
+  Range: [-0.345681, 0.537072]
+  Params: 147456
+
+blocks.2.mlp.fc2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.645095, 0.417580]
+  Params: 192
+
+blocks.3.norm1.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.567357, 1.666043]
+  Params: 192
+
+blocks.3.norm1.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-2.653193, 0.944189]
+  Params: 192
+
+blocks.3.attn.qkv.weight:
+  Shape: (576, 192)
+  Dtype: float32
+  Range: [-0.419456, 0.341843]
+  Params: 110592
+
+blocks.3.attn.qkv.bias:
+  Shape: (576,)
+  Dtype: float32
+  Range: [-2.106288, 1.732626]
+  Params: 576
+
+blocks.3.attn.proj.weight:
+  Shape: (192, 192)
+  Dtype: float32
+  Range: [-0.236793, 0.388776]
+  Params: 36864
+
+blocks.3.attn.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.576582, 0.548403]
+  Params: 192
+
+blocks.3.norm2.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.648218, 1.584990]
+  Params: 192
+
+blocks.3.norm2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.614974, 0.700227]
+  Params: 192
+
+blocks.3.mlp.fc1.weight:
+  Shape: (768, 192)
+  Dtype: float32
+  Range: [-0.352358, 0.303027]
+  Params: 147456
+
+blocks.3.mlp.fc1.bias:
+  Shape: (768,)
+  Dtype: float32
+  Range: [-1.783022, 0.315085]
+  Params: 768
+
+blocks.3.mlp.fc2.weight:
+  Shape: (192, 768)
+  Dtype: float32
+  Range: [-0.534461, 0.577527]
+  Params: 147456
+
+blocks.3.mlp.fc2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.457506, 0.407989]
+  Params: 192
+
+blocks.4.norm1.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.623733, 1.668931]
+  Params: 192
+
+blocks.4.norm1.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-2.819127, 1.142283]
+  Params: 192
+
+blocks.4.attn.qkv.weight:
+  Shape: (576, 192)
+  Dtype: float32
+  Range: [-0.310992, 0.314111]
+  Params: 110592
+
+blocks.4.attn.qkv.bias:
+  Shape: (576,)
+  Dtype: float32
+  Range: [-2.540281, 2.190001]
+  Params: 576
+
+blocks.4.attn.proj.weight:
+  Shape: (192, 192)
+  Dtype: float32
+  Range: [-0.194273, 0.231584]
+  Params: 36864
+
+blocks.4.attn.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.534555, 0.554419]
+  Params: 192
+
+blocks.4.norm2.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.649169, 1.584613]
+  Params: 192
+
+blocks.4.norm2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.029204, 0.846884]
+  Params: 192
+
+blocks.4.mlp.fc1.weight:
+  Shape: (768, 192)
+  Dtype: float32
+  Range: [-0.326554, 0.292462]
+  Params: 147456
+
+blocks.4.mlp.fc1.bias:
+  Shape: (768,)
+  Dtype: float32
+  Range: [-2.210810, 0.239664]
+  Params: 768
+
+blocks.4.mlp.fc2.weight:
+  Shape: (192, 768)
+  Dtype: float32
+  Range: [-0.332606, 0.353920]
+  Params: 147456
+
+blocks.4.mlp.fc2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.805766, 0.419778]
+  Params: 192
+
+blocks.5.norm1.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.614369, 1.568974]
+  Params: 192
+
+blocks.5.norm1.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-2.626131, 0.972126]
+  Params: 192
+
+blocks.5.attn.qkv.weight:
+  Shape: (576, 192)
+  Dtype: float32
+  Range: [-0.341546, 0.314301]
+  Params: 110592
+
+blocks.5.attn.qkv.bias:
+  Shape: (576,)
+  Dtype: float32
+  Range: [-2.362159, 2.180612]
+  Params: 576
+
+blocks.5.attn.proj.weight:
+  Shape: (192, 192)
+  Dtype: float32
+  Range: [-0.239118, 0.243602]
+  Params: 36864
+
+blocks.5.attn.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.536185, 0.939018]
+  Params: 192
+
+blocks.5.norm2.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.678488, 1.574054]
+  Params: 192
+
+blocks.5.norm2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.839112, 0.883736]
+  Params: 192
+
+blocks.5.mlp.fc1.weight:
+  Shape: (768, 192)
+  Dtype: float32
+  Range: [-0.382498, 0.348816]
+  Params: 147456
+
+blocks.5.mlp.fc1.bias:
+  Shape: (768,)
+  Dtype: float32
+  Range: [-1.499465, 0.453272]
+  Params: 768
+
+blocks.5.mlp.fc2.weight:
+  Shape: (192, 768)
+  Dtype: float32
+  Range: [-0.351764, 0.512398]
+  Params: 147456
+
+blocks.5.mlp.fc2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.856423, 0.470860]
+  Params: 192
+
+blocks.6.norm1.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.771872, 1.430396]
+  Params: 192
+
+blocks.6.norm1.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-2.611235, 1.238215]
+  Params: 192
+
+blocks.6.attn.qkv.weight:
+  Shape: (576, 192)
+  Dtype: float32
+  Range: [-0.318159, 0.288631]
+  Params: 110592
+
+blocks.6.attn.qkv.bias:
+  Shape: (576,)
+  Dtype: float32
+  Range: [-2.675555, 1.988223]
+  Params: 576
+
+blocks.6.attn.proj.weight:
+  Shape: (192, 192)
+  Dtype: float32
+  Range: [-0.255310, 0.247676]
+  Params: 36864
+
+blocks.6.attn.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.422474, 0.971166]
+  Params: 192
+
+blocks.6.norm2.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.721369, 1.758585]
+  Params: 192
+
+blocks.6.norm2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.759412, 1.079189]
+  Params: 192
+
+blocks.6.mlp.fc1.weight:
+  Shape: (768, 192)
+  Dtype: float32
+  Range: [-0.367401, 0.274058]
+  Params: 147456
+
+blocks.6.mlp.fc1.bias:
+  Shape: (768,)
+  Dtype: float32
+  Range: [-1.346246, 0.299173]
+  Params: 768
+
+blocks.6.mlp.fc2.weight:
+  Shape: (192, 768)
+  Dtype: float32
+  Range: [-0.504592, 0.517824]
+  Params: 147456
+
+blocks.6.mlp.fc2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.767523, 0.278669]
+  Params: 192
+
+blocks.7.norm1.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.734235, 1.398738]
+  Params: 192
+
+blocks.7.norm1.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-2.662957, 1.297640]
+  Params: 192
+
+blocks.7.attn.qkv.weight:
+  Shape: (576, 192)
+  Dtype: float32
+  Range: [-0.309759, 0.354094]
+  Params: 110592
+
+blocks.7.attn.qkv.bias:
+  Shape: (576,)
+  Dtype: float32
+  Range: [-1.751333, 2.569152]
+  Params: 576
+
+blocks.7.attn.proj.weight:
+  Shape: (192, 192)
+  Dtype: float32
+  Range: [-0.194601, 0.211994]
+  Params: 36864
+
+blocks.7.attn.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.426040, 0.605002]
+  Params: 192
+
+blocks.7.norm2.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.854469, 2.117270]
+  Params: 192
+
+blocks.7.norm2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.938061, 1.025466]
+  Params: 192
+
+blocks.7.mlp.fc1.weight:
+  Shape: (768, 192)
+  Dtype: float32
+  Range: [-0.249679, 0.216748]
+  Params: 147456
+
+blocks.7.mlp.fc1.bias:
+  Shape: (768,)
+  Dtype: float32
+  Range: [-1.246038, 0.439168]
+  Params: 768
+
+blocks.7.mlp.fc2.weight:
+  Shape: (192, 768)
+  Dtype: float32
+  Range: [-0.391069, 0.545827]
+  Params: 147456
+
+blocks.7.mlp.fc2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.871196, 0.321555]
+  Params: 192
+
+blocks.8.norm1.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.613378, 1.435898]
+  Params: 192
+
+blocks.8.norm1.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-2.392426, 1.290652]
+  Params: 192
+
+blocks.8.attn.qkv.weight:
+  Shape: (576, 192)
+  Dtype: float32
+  Range: [-0.329844, 0.320979]
+  Params: 110592
+
+blocks.8.attn.qkv.bias:
+  Shape: (576,)
+  Dtype: float32
+  Range: [-2.913356, 1.928040]
+  Params: 576
+
+blocks.8.attn.proj.weight:
+  Shape: (192, 192)
+  Dtype: float32
+  Range: [-0.228225, 0.215662]
+  Params: 36864
+
+blocks.8.attn.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.320118, 0.338603]
+  Params: 192
+
+blocks.8.norm2.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.673629, 2.785079]
+  Params: 192
+
+blocks.8.norm2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.217253, 1.680589]
+  Params: 192
+
+blocks.8.mlp.fc1.weight:
+  Shape: (768, 192)
+  Dtype: float32
+  Range: [-0.272425, 0.248232]
+  Params: 147456
+
+blocks.8.mlp.fc1.bias:
+  Shape: (768,)
+  Dtype: float32
+  Range: [-1.236741, 0.429838]
+  Params: 768
+
+blocks.8.mlp.fc2.weight:
+  Shape: (192, 768)
+  Dtype: float32
+  Range: [-0.441556, 0.656242]
+  Params: 147456
+
+blocks.8.mlp.fc2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.058952, 0.375885]
+  Params: 192
+
+blocks.9.norm1.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.568005, 1.458366]
+  Params: 192
+
+blocks.9.norm1.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.987496, 1.316572]
+  Params: 192
+
+blocks.9.attn.qkv.weight:
+  Shape: (576, 192)
+  Dtype: float32
+  Range: [-0.291486, 0.305755]
+  Params: 110592
+
+blocks.9.attn.qkv.bias:
+  Shape: (576,)
+  Dtype: float32
+  Range: [-2.043348, 1.926986]
+  Params: 576
+
+blocks.9.attn.proj.weight:
+  Shape: (192, 192)
+  Dtype: float32
+  Range: [-0.270069, 0.253442]
+  Params: 36864
+
+blocks.9.attn.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.730053, 0.331610]
+  Params: 192
+
+blocks.9.norm2.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.452632, 2.604469]
+  Params: 192
+
+blocks.9.norm2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.146319, 1.098960]
+  Params: 192
+
+blocks.9.mlp.fc1.weight:
+  Shape: (768, 192)
+  Dtype: float32
+  Range: [-0.279415, 0.242508]
+  Params: 147456
+
+blocks.9.mlp.fc1.bias:
+  Shape: (768,)
+  Dtype: float32
+  Range: [-1.325870, 0.474510]
+  Params: 768
+
+blocks.9.mlp.fc2.weight:
+  Shape: (192, 768)
+  Dtype: float32
+  Range: [-0.578373, 0.600013]
+  Params: 147456
+
+blocks.9.mlp.fc2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.350599, 0.382654]
+  Params: 192
+
+blocks.10.norm1.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.638486, 1.367304]
+  Params: 192
+
+blocks.10.norm1.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.609718, 1.337631]
+  Params: 192
+
+blocks.10.attn.qkv.weight:
+  Shape: (576, 192)
+  Dtype: float32
+  Range: [-0.259135, 0.237744]
+  Params: 110592
+
+blocks.10.attn.qkv.bias:
+  Shape: (576,)
+  Dtype: float32
+  Range: [-2.042934, 1.773972]
+  Params: 576
+
+blocks.10.attn.proj.weight:
+  Shape: (192, 192)
+  Dtype: float32
+  Range: [-0.259730, 0.290225]
+  Params: 36864
+
+blocks.10.attn.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.283244, 0.460097]
+  Params: 192
+
+blocks.10.norm2.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.389824, 2.164594]
+  Params: 192
+
+blocks.10.norm2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.276943, 0.848100]
+  Params: 192
+
+blocks.10.mlp.fc1.weight:
+  Shape: (768, 192)
+  Dtype: float32
+  Range: [-0.261761, 0.239279]
+  Params: 147456
+
+blocks.10.mlp.fc1.bias:
+  Shape: (768,)
+  Dtype: float32
+  Range: [-1.469396, 0.487721]
+  Params: 768
+
+blocks.10.mlp.fc2.weight:
+  Shape: (192, 768)
+  Dtype: float32
+  Range: [-0.754717, 0.535051]
+  Params: 147456
+
+blocks.10.mlp.fc2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.371504, 0.676743]
+  Params: 192
+
+blocks.11.norm1.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.692762, 1.268808]
+  Params: 192
+
+blocks.11.norm1.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.879471, 1.178690]
+  Params: 192
+
+blocks.11.attn.qkv.weight:
+  Shape: (576, 192)
+  Dtype: float32
+  Range: [-0.270126, 0.274471]
+  Params: 110592
+
+blocks.11.attn.qkv.bias:
+  Shape: (576,)
+  Dtype: float32
+  Range: [-2.384838, 2.023817]
+  Params: 576
+
+blocks.11.attn.proj.weight:
+  Shape: (192, 192)
+  Dtype: float32
+  Range: [-0.470055, 0.512927]
+  Params: 36864
+
+blocks.11.attn.proj.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.828267, 0.722734]
+  Params: 192
+
+blocks.11.norm2.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.303651, 1.643608]
+  Params: 192
+
+blocks.11.norm2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.463639, 0.430736]
+  Params: 192
+
+blocks.11.mlp.fc1.weight:
+  Shape: (768, 192)
+  Dtype: float32
+  Range: [-0.406159, 0.302194]
+  Params: 147456
+
+blocks.11.mlp.fc1.bias:
+  Shape: (768,)
+  Dtype: float32
+  Range: [-1.250403, 1.599020]
+  Params: 768
+
+blocks.11.mlp.fc2.weight:
+  Shape: (192, 768)
+  Dtype: float32
+  Range: [-0.587952, 0.817951]
+  Params: 147456
+
+blocks.11.mlp.fc2.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-0.376902, 1.314809]
+  Params: 192
+
+norm.weight:
+  Shape: (192,)
+  Dtype: float32
+  Range: [0.274780, 2.291462]
+  Params: 192
+
+norm.bias:
+  Shape: (192,)
+  Dtype: float32
+  Range: [-1.609885, 0.947774]
+  Params: 192
+
+head.weight:
+  Shape: (1000, 192)
+  Dtype: float32
+  Range: [-0.188684, 0.205781]
+  Params: 192000
+
+head.bias:
+  Shape: (1000,)
+  Dtype: float32
+  Range: [-0.663743, 0.599727]
+  Params: 1000
+
+總參數量: 5,717,416

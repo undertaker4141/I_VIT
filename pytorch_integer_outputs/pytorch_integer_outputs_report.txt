@@ -1,0 +1,154 @@
+================================================================================
+PyTorch 量化模型整數輸出報告
+================================================================================
+
+block0_norm1:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-364550432.0, 839205568.0]
+  Mean: -200921.88, Std: 57673616.00
+
+block0_norm2:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-635591168.0, 5948016640.0]
+  Mean: 31629984.00, Std: 400465856.00
+
+block1_norm1:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-341712704.0, 686345856.0]
+  Mean: 112841.41, Std: 62631832.00
+
+block1_norm2:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-594223232.0, 805372800.0]
+  Mean: -808946.12, Std: 70127344.00
+
+block2_norm1:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-453702528.0, 697653952.0]
+  Mean: 246220.61, Std: 67589672.00
+
+block2_norm2:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-556808192.0, 777509120.0]
+  Mean: -626275.56, Std: 71956880.00
+
+block3_norm1:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-475373440.0, 718518400.0]
+  Mean: -16027.07, Std: 71915536.00
+
+block3_norm2:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-534923712.0, 821400576.0]
+  Mean: -1012907.00, Std: 73134392.00
+
+block4_norm1:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-489335296.0, 743287168.0]
+  Mean: -79330.73, Std: 73100592.00
+
+block4_norm2:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-558800320.0, 927820928.0]
+  Mean: -647029.94, Std: 74666168.00
+
+block5_norm1:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-474061152.0, 730227072.0]
+  Mean: 192536.05, Std: 75761928.00
+
+block5_norm2:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-496207264.0, 952854464.0]
+  Mean: 224682.31, Std: 75147120.00
+
+block6_norm1:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-470509824.0, 766186432.0]
+  Mean: 36655.11, Std: 75037680.00
+
+block6_norm2:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-439754560.0, 1030192064.0]
+  Mean: 1325611.38, Std: 75894760.00
+
+block7_norm1:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-493289536.0, 748888064.0]
+  Mean: 68415.12, Std: 74623024.00
+
+block7_norm2:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-416019584.0, 1077281280.0]
+  Mean: 1684207.88, Std: 76596968.00
+
+block8_norm1:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-496612416.0, 720227456.0]
+  Mean: 393698.50, Std: 74818440.00
+
+block8_norm2:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-436302592.0, 1089912576.0]
+  Mean: 1516102.12, Std: 77848464.00
+
+block9_norm1:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-570699008.0, 721153920.0]
+  Mean: 322893.62, Std: 75129760.00
+
+block9_norm2:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-402796288.0, 880440192.0]
+  Mean: -208947.23, Std: 75675960.00
+
+block10_norm1:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-732140160.0, 466828960.0]
+  Mean: -29062.30, Std: 75024600.00
+
+block10_norm2:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-776244992.0, 413750784.0]
+  Mean: -3480463.50, Std: 80923368.00
+
+block11_norm1:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-792166016.0, 533872256.0]
+  Mean: 11123.44, Std: 75117592.00
+
+block11_norm2:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-698480064.0, 392125824.0]
+  Mean: -10845366.00, Std: 82325784.00
+
+final_norm:
+  Shape: (1, 197, 192)
+  Dtype: float32
+  Range: [-1020865024.0, 330425088.0]
+  Mean: 99489.68, Std: 88242456.00
+

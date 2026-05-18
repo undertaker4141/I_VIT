@@ -33,12 +33,14 @@ def main():
                         help='Output file for calibrated scales')
     args = parser.parse_args()
     
-    # Save current directory and resolve output path BEFORE changing directories
+    # Save current directory and resolve ALL paths BEFORE changing directories
     original_cwd = os.getcwd()
     output_path = os.path.abspath(args.output)
+    image_path = os.path.abspath(args.image)  # 🔥 FIX: Resolve image path before chdir
+    model_path = os.path.abspath(args.model_path)  # Also resolve model path
     
     # Load checkpoint
-    checkpoint = torch.load(args.model_path, map_location='cpu', weights_only=False)
+    checkpoint = torch.load(model_path, map_location='cpu', weights_only=False)
     model_dict = checkpoint['model'] if 'model' in checkpoint else checkpoint
     
     # Load PyTorch model
@@ -53,8 +55,8 @@ def main():
     pt_model.load_state_dict(ld, strict=False)
     pt_model.eval()
     
-    print(f"[1/3] Loading model from {args.model_path}")
-    print(f"[2/3] Running calibration forward on {args.image}")
+    print(f"[1/3] Loading model from {model_path}")
+    print(f"[2/3] Running calibration forward on {image_path}")
     
     # Collect all scaling factors during forward pass
     runtime_scales = {}
@@ -77,8 +79,8 @@ def main():
         if 'QuantAct' in module_type or 'qact' in name.lower():
             module.register_forward_hook(make_hook(name))
     
-    # Run forward pass
-    x_f32 = preprocess_float(args.image)
+    # Run forward pass (use resolved absolute path)
+    x_f32 = preprocess_float(image_path)
     with torch.no_grad():
         _ = pt_model(x_f32)
     

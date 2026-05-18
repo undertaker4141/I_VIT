@@ -1,0 +1,9 @@
+Predicted class: 1
+Probability: 0.399624
+
+Top-5 predictions:
+  1. Class 1: 0.399624
+  2. Class 115: 0.231485
+  3. Class 112: 0.056697
+  4. Class 862: 0.027931
+  5. Class 4: 0.025651

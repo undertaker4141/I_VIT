@@ -20,3 +20,10 @@ patterns_cmodel_golden
 patterns_cmodel_golden.zip
 patterns_tvm.zip
 
+# Large model files (> 100MB)
+I-ViT/output_gpu/*.pth
+output_gpu.zip
+
+# Ignore entire output_gpu directory
+I-ViT/output_gpu/
+
