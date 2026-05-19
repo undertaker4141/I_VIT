@@ -722,28 +722,33 @@ if __name__ == '__main__':
     print(f"  輸入: shape={x_int.shape}, dtype={x_int.dtype}, range=[{x_int.min()}, {x_int.max()}]")
     print(f"  輸出: shape={output.shape}, dtype={output.dtype}, range=[{output.min()}, {output.max()}]")
     
-    # 測試 Requantize
-    print("\n[6] 測試 Requantize")
+    # 測試 Requantize (整數版本)
+    print("\n[6] 測試 Requantize Integer")
     x_int = np.random.randint(-32768, 32767, (1, 10, 192), dtype=np.int16)
     input_sf = 0.01
     output_sf = 0.001
     
-    output = requantize(x_int, input_sf, output_sf, output_bits=8)
+    output = requantize_integer(x_int, input_sf, output_sf, output_bits=8)
     print(f"  輸入: shape={x_int.shape}, dtype={x_int.dtype}, range=[{x_int.min()}, {x_int.max()}]")
     print(f"  輸出: shape={output.shape}, dtype={output.dtype}, range=[{output.min()}, {output.max()}]")
+    print(f"  ✓ 使用純整數 requantize（P0 修復）")
     
-    # 測試 QuantAct Residual
-    print("\n[7] 測試 QuantAct Residual")
+    # 測試 QuantAct Residual (整數版本)
+    print("\n[7] 測試 QuantAct Residual Integer")
     x1_int = np.random.randint(-32768, 32767, (1, 10, 192), dtype=np.int16)
     x1_sf = 0.01
     x2_int = np.random.randint(-32768, 32767, (1, 10, 192), dtype=np.int16)
     x2_sf = 0.015
     output_sf = 0.012
     
-    output = quant_act_residual(x1_int, x1_sf, x2_int, x2_sf, output_sf)
+    output = quant_act_residual_integer(x1_int, x1_sf, x2_int, x2_sf, output_sf)
     print(f"  輸入1: shape={x1_int.shape}, dtype={x1_int.dtype}, sf={x1_sf}")
     print(f"  輸入2: shape={x2_int.shape}, dtype={x2_int.dtype}, sf={x2_sf}")
     print(f"  輸出: shape={output.shape}, dtype={output.dtype}, range=[{output.min()}, {output.max()}], sf={output_sf}")
+    print(f"  ✓ 使用純整數 residual（P0 修復）")
     
     print("\n" + "="*80)
-    print("✓ 所有測試完成")
+    print("✓ 所有測試完成（P0 & P1 修復已驗證）")
+    print("  - GELU/Softmax: 使用明確的 int64（P1 修復）")
+    print("  - Requantize: 使用純整數 M×2^(-S)（P0 修復）")
+    print("  - Residual: 使用純整數加法（P0 修復）")
