@@ -32,8 +32,9 @@ from pure_numpy_cmodel import (
     int_softmax,
     quantize_to_int,
     dequantize_to_float,
-    requantize,
-    quant_act_residual
+    requantize_integer,
+    quant_act_residual_integer,
+    precompute_requant_params
 )
 
 
@@ -169,7 +170,7 @@ def pure_integer_attention(x_int8, x_sf, block_weights):
     qkv_sf = x_sf * qkv_fc_sf  # per-channel
     
     # 使用 attn_qact1_sf 作為目標 scaling factor
-    qkv_int8 = requantize(qkv_int32, qkv_sf, attn_qact1_sf, output_bits=8)
+    qkv_int8 = requantize_integer(qkv_int32, qkv_sf, attn_qact1_sf, output_bits=8)
     
     # Step 3: Reshape to [B, N, 3, num_heads, head_dim]
     qkv_int8 = qkv_int8.reshape(B, N, 3, num_heads, head_dim)
@@ -188,7 +189,7 @@ def pure_integer_attention(x_int8, x_sf, block_weights):
     attn_sf = attn_qact1_sf * attn_qact1_sf * scale
     
     # 使用 attn_qact_attn1_sf 作為目標 scaling factor
-    attn_int8 = requantize(attn_int32, attn_sf, attn_qact_attn1_sf, output_bits=8)
+    attn_int8 = requantize_integer(attn_int32, attn_sf, attn_qact_attn1_sf, output_bits=8)
     
     # Step 8: Softmax (使用 output_bit=16，與 PyTorch 一致)
     attn_softmax_int32 = int_softmax(attn_int8.astype(np.int32), attn_qact_attn1_sf, output_bit=16, n=15)
@@ -215,7 +216,7 @@ def pure_integer_attention(x_int8, x_sf, block_weights):
     attn_v_sf = softmax_output_sf * attn_qact1_sf
     
     # 使用 attn_qact2_sf 作為目標 scaling factor
-    attn_v_int8 = requantize(attn_v_int32, attn_v_sf, attn_qact2_sf, output_bits=8)
+    attn_v_int8 = requantize_integer(attn_v_int32, attn_v_sf, attn_qact2_sf, output_bits=8)
     
     # Step 13: Projection (int8 @ int8 -> int32)
     output_int32 = int_dense(attn_v_int8, block_weights['proj_weight_int'], block_weights['proj_bias_int'])
@@ -225,7 +226,7 @@ def pure_integer_attention(x_int8, x_sf, block_weights):
     output_sf = attn_qact2_sf * proj_fc_sf  # per-channel
     
     # 使用 attn_qact3_sf 作為目標 scaling factor
-    output_int16 = requantize(output_int32, output_sf, attn_qact3_sf, output_bits=16)
+    output_int16 = requantize_integer(output_int32, output_sf, attn_qact3_sf, output_bits=16)
     
     return output_int16, attn_qact3_sf
 
@@ -256,7 +257,7 @@ def pure_integer_mlp(x_int8, x_sf, block_weights):
     fc1_sf = x_sf * fc1_fc_sf  # per-channel
     
     # 使用 mlp_qact1_sf 作為目標 scaling factor
-    fc1_int8 = requantize(fc1_int32, fc1_sf, mlp_qact1_sf, output_bits=8)
+    fc1_int8 = requantize_integer(fc1_int32, fc1_sf, mlp_qact1_sf, output_bits=8)
     
     # Step 3: GELU
     gelu_int32 = int_gelu(fc1_int8.astype(np.int32), mlp_qact1_sf, output_bit=8, n=23)
@@ -268,7 +269,7 @@ def pure_integer_mlp(x_int8, x_sf, block_weights):
     gelu_output_sf = mlp_qact1_sf * sigmoid_sf
     
     # 使用 mlp_qact_gelu_sf 作為目標 scaling factor
-    gelu_int8 = requantize(gelu_int32, gelu_output_sf, mlp_qact_gelu_sf, output_bits=8)
+    gelu_int8 = requantize_integer(gelu_int32, gelu_output_sf, mlp_qact_gelu_sf, output_bits=8)
     
     # Step 4: FC2 (int8 @ int8 -> int32)
     fc2_int32 = int_dense(gelu_int8, block_weights['fc2_weight_int'], block_weights['fc2_bias_int'])
@@ -278,7 +279,7 @@ def pure_integer_mlp(x_int8, x_sf, block_weights):
     fc2_sf = mlp_qact_gelu_sf * fc2_fc_sf  # per-channel
     
     # 使用 mlp_qact2_sf 作為目標 scaling factor
-    output_int16 = requantize(fc2_int32, fc2_sf, mlp_qact2_sf, output_bits=16)
+    output_int16 = requantize_integer(fc2_int32, fc2_sf, mlp_qact2_sf, output_bits=16)
     
     return output_int16, mlp_qact2_sf
 
@@ -318,7 +319,7 @@ def pure_integer_transformer_block(x_int16, x_sf, block_weights, dim_sqrt, block
     norm1_sf = base_scaling_factor * block_weights['norm1_weight']  # per-channel
     
     # 使用 qact1_sf 作為目標 scaling factor
-    x_norm1_int8 = requantize(x_norm1_int32, norm1_sf, block_weights['qact1_sf'], output_bits=8)
+    x_norm1_int8 = requantize_integer(x_norm1_int32, norm1_sf, block_weights['qact1_sf'], output_bits=8)
     
     # ============================================================
     # Attention (純整數)
@@ -331,7 +332,7 @@ def pure_integer_transformer_block(x_int16, x_sf, block_weights, dim_sqrt, block
     # Residual 1 (純整數)
     # ============================================================
     # 使用 qact2_sf 作為目標 scaling factor
-    x_int16 = quant_act_residual(
+    x_int16 = quant_act_residual_integer(
         attn_output_int16, attn_output_sf,
         x_input_for_residual1, x_sf_for_residual1,
         block_weights['qact2_sf'], output_bits=16
@@ -357,7 +358,7 @@ def pure_integer_transformer_block(x_int16, x_sf, block_weights, dim_sqrt, block
     norm2_sf = base_scaling_factor * block_weights['norm2_weight']  # per-channel
     
     # 使用 qact3_sf 作為目標 scaling factor
-    x_norm2_int8 = requantize(x_norm2_int32, norm2_sf, block_weights['qact3_sf'], output_bits=8)
+    x_norm2_int8 = requantize_integer(x_norm2_int32, norm2_sf, block_weights['qact3_sf'], output_bits=8)
     
     # ============================================================
     # MLP (純整數)
@@ -370,7 +371,7 @@ def pure_integer_transformer_block(x_int16, x_sf, block_weights, dim_sqrt, block
     # Residual 2 (純整數)
     # ============================================================
     # 使用 qact4_sf 作為目標 scaling factor
-    x_int16 = quant_act_residual(
+    x_int16 = quant_act_residual_integer(
         mlp_output_int16, mlp_output_sf,
         x_input_for_residual2, x_sf_for_residual2,
         block_weights['qact4_sf'], output_bits=16

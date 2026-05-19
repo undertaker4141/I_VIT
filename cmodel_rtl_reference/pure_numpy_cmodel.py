@@ -1,5 +1,5 @@
 """
-純 NumPy C-Model - 完全底層實現
+純 NumPy C-Model - 完全底層實現（P0 & P1 修復完成）
 ==================================================================
 目標：使用純 NumPy 實現完整的 ViT 推論，不依賴 PyTorch
 
@@ -9,6 +9,17 @@
 3. 完全匹配 PyTorch IntLayerNorm/IntGELU/IntSoftmax 的算法
 4. 可以直接轉換為 RTL 實現
 
+✅ P0 修復（2026-05-19）：
+   - requantize() 改為純整數實現（M×2^(-S) 格式）
+   - quant_act_residual() 改為純整數實現
+   - 新增 precompute_requant_params() 預計算 M 和 S
+   - 新增 requantize_integer() 純整數 requantize
+   - 新增 quant_act_residual_integer() 純整數殘差連接
+
+✅ P1 修復（2026-05-19）：
+   - GELU 和 Softmax 的 object 類型改為明確的 int64
+   - 64-bit 乘法最大值 ~2^62，不會溢出 int64
+
 註：int64 只用於 GELU 和 Softmax 的指數運算中間值，最終輸出仍是 int32。
     詳見 docs/cmodel/INT64_USAGE_EXPLANATION.md
 
@@ -16,9 +27,10 @@
 - LayerNorm: 純整數實現（int32）
 - Dense/Linear: int8 @ int8 -> int32
 - MatMul: int8 @ int8 -> int32
-- GELU: 整數指數運算 + sigmoid（中間值 int64，輸出 int32）
-- Softmax: 整數指數運算 + 歸一化（中間值 int64，輸出 int32）
-- QuantAct: 量化激活函數（requantization）
+- GELU: 整數指數運算 + sigmoid（中間值 int64，輸出 int32）✅ P1 修復
+- Softmax: 整數指數運算 + 歸一化（中間值 int64，輸出 int32）✅ P1 修復
+- QuantAct: 量化激活函數（requantization）✅ P0 修復
+- Requantize: 純整數 requantization（M×2^(-S)）✅ P0 修復
 """
 
 import numpy as np
@@ -249,9 +261,17 @@ def int_gelu(x_int, scaling_factor, output_bit=8, n=23):
     # Step 5: Division
     factor = (2**31 - 1) // exp_int_sum_safe
     
-    # Step 6: Scale and shift
+    # Step 6: Scale and shift（P1 修復：使用明確的 int64）
     shift_amt = 31 - output_bit + 1  # = 24 for output_bit=8
-    term = exp_int.astype(object) * factor.astype(object)
+    
+    # 明確使用 int64 乘法（不使用 object）
+    exp_int64 = exp_int.astype(np.int64)
+    factor_int64 = factor.astype(np.int64)
+    
+    # 64-bit 乘法（最大值 ~2^62，不會溢出 int64）
+    term = exp_int64 * factor_int64
+    
+    # 右移
     sigmoid_int = (term >> shift_amt).astype(np.int64)
     
     # Step 7: Multiply with input
@@ -303,9 +323,17 @@ def int_softmax(x_int, scaling_factor, output_bit=8, n=15):
     # Step 5: Division
     factor = (2**31 - 1) // exp_int_sum_safe
     
-    # Step 6: Scale and shift
+    # Step 6: Scale and shift（P1 修復：使用明確的 int64）
     shift_amt = 31 - output_bit + 1  # = 24 for output_bit=8
-    term = exp_int.astype(object) * factor.astype(object)
+    
+    # 明確使用 int64 乘法（不使用 object）
+    exp_int64 = exp_int.astype(np.int64)
+    factor_int64 = factor.astype(np.int64)
+    
+    # 64-bit 乘法（最大值 ~2^62，不會溢出 int64）
+    term = exp_int64 * factor_int64
+    
+    # 右移
     output = (term >> shift_amt).astype(np.int64)
     
     return output.astype(np.int32)
@@ -314,6 +342,200 @@ def int_softmax(x_int, scaling_factor, output_bit=8, n=15):
 # ==================================================================
 # 量化/反量化模組
 # ==================================================================
+
+def precompute_requant_params(input_sf, output_sf):
+    """
+    預計算 requantization 參數（P0 修復）
+    
+    scale = input_sf / output_sf = M * 2^(-S)
+    
+    參數:
+        input_sf: 輸入 scaling factor (float or array)
+        output_sf: 輸出 scaling factor (float or array)
+    
+    返回:
+        M: 整數乘數 (int32 or array of int32)
+        S: 右移位數 (int or array of int)
+    
+    算法:
+        1. 計算 scale = input_sf / output_sf
+        2. 找到合適的 S，使得 M = round(scale * 2^S) 在 int32 範圍內
+        3. 優先選擇較大的 S 以提高精度
+    """
+    # 處理 per-channel 情況
+    if isinstance(input_sf, np.ndarray) or isinstance(output_sf, np.ndarray):
+        # 確保兩者都是 array
+        if not isinstance(input_sf, np.ndarray):
+            input_sf = np.full_like(output_sf, input_sf)
+        if not isinstance(output_sf, np.ndarray):
+            output_sf = np.full_like(input_sf, output_sf)
+        
+        scale = input_sf / output_sf
+        M = np.zeros_like(scale, dtype=np.int32)
+        S = np.zeros_like(scale, dtype=np.int32)
+        
+        for i in range(len(scale)):
+            M[i], S[i] = precompute_requant_params(scale[i], 1.0)
+        
+        return M, S
+    
+    # Scalar 情況
+    scale = float(input_sf / output_sf)
+    
+    if scale >= 1.0:
+        # scale >= 1: 需要放大
+        # 找到最小的 S，使得 M = round(scale * 2^S) < 2^31
+        S = 0
+        while S < 31:
+            M_candidate = scale * (2 ** S)
+            if M_candidate >= (2**30):  # 留一些餘量
+                break
+            S += 1
+        
+        # 回退一步
+        if S > 0:
+            S -= 1
+        
+        M = int(np.round(scale * (2 ** S)))
+    else:
+        # scale < 1: 需要縮小
+        # 找到最大的 S，使得 M = round(scale * 2^S) >= 1
+        S = 0
+        while S < 31:
+            M_candidate = scale * (2 ** (S + 1))
+            if M_candidate >= (2**30):  # 留一些餘量
+                break
+            S += 1
+        
+        M = int(np.round(scale * (2 ** S)))
+        
+        # 確保 M >= 1
+        if M < 1:
+            M = 1
+    
+    return np.int32(M), int(S)
+
+
+def requantize_integer(x_int, M_or_input_sf, S_or_output_sf, output_bits=8):
+    """
+    純整數 Requantization（P0 修復）- 兼容舊接口
+    
+    參數:
+        x_int: 整數輸入 (int8/int16/int32)
+        M_or_input_sf: 整數乘數 M (int32) 或輸入 scaling factor (float)
+        S_or_output_sf: 右移位數 S (int) 或輸出 scaling factor (float)
+        output_bits: 輸出位元數 (8/16/32)
+    
+    返回:
+        output_int: 重新量化的整數輸出
+    
+    算法:
+        output = round((x * M) >> S)
+               = ((x * M) + (1 << (S-1))) >> S
+    
+    註：使用 int64 避免乘法溢出
+    
+    兼容性：
+        - 如果 M_or_input_sf 是 float，自動調用 precompute_requant_params
+        - 如果 M_or_input_sf 是 int，直接使用 M 和 S
+    """
+    # 檢查是否需要預計算 M 和 S
+    if isinstance(M_or_input_sf, (float, np.floating)) or isinstance(M_or_input_sf, np.ndarray):
+        # 舊接口：requantize_integer(x, input_sf, output_sf, output_bits)
+        input_sf = M_or_input_sf
+        output_sf = S_or_output_sf
+        M, S = precompute_requant_params(input_sf, output_sf)
+    else:
+        # 新接口：requantize_integer(x, M, S, output_bits)
+        M = M_or_input_sf
+        S = S_or_output_sf
+    
+    # 處理 per-channel 情況
+    if isinstance(M, np.ndarray):
+        output = np.zeros_like(x_int, dtype=np.int64)
+        
+        for c in range(x_int.shape[-1]):
+            x_int64 = x_int[..., c].astype(np.int64)
+            M_int64 = np.int64(M[c])
+            S_c = int(S[c]) if isinstance(S, np.ndarray) else int(S)
+            
+            # 乘法
+            scaled = x_int64 * M_int64
+            
+            # 右移前加上 rounding bias
+            if S_c > 0:
+                rounding_bias = np.int64(1) << (S_c - 1)
+                output[..., c] = (scaled + rounding_bias) >> S_c
+            else:
+                output[..., c] = scaled
+    else:
+        # Scalar 情況
+        # 使用 int64 避免溢出
+        x_int64 = x_int.astype(np.int64)
+        M_int64 = np.int64(M)
+        
+        # 乘法
+        scaled = x_int64 * M_int64
+        
+        # 右移前加上 rounding bias (相當於 round)
+        if S > 0:
+            rounding_bias = np.int64(1) << (S - 1)
+            output = (scaled + rounding_bias) >> S
+        else:
+            output = scaled
+    
+    # Clip to output range
+    if output_bits == 8:
+        return np.clip(output, -128, 127).astype(np.int8)
+    elif output_bits == 16:
+        return np.clip(output, -32768, 32767).astype(np.int16)
+    else:
+        return np.clip(output, -2147483648, 2147483647).astype(np.int32)
+
+
+def quant_act_residual_integer(x1_int, x1_sf, x2_int, x2_sf, output_sf, output_bits=16):
+    """
+    純整數 QuantAct with Residual（P0 修復）
+    
+    參數:
+        x1_int: 第一個輸入（主路徑）
+        x1_sf: 第一個輸入的 scaling factor
+        x2_int: 第二個輸入（殘差路徑）
+        x2_sf: 第二個輸入的 scaling factor
+        output_sf: 輸出 scaling factor
+        output_bits: 輸出位元數
+    
+    返回:
+        output_int: 重新量化的整數輸出
+    
+    算法:
+        1. x1_scaled = (x1 * M1) >> S1
+        2. x2_scaled = (x2 * M2) >> S2
+        3. y = x1_scaled + x2_scaled
+        4. output = (y * M_out) >> S_out
+    
+    註：為了簡化，我們先將兩個輸入對齊到同一個 scale，再相加
+    """
+    # 預計算 requantization 參數
+    # 策略：將兩個輸入都轉換到輸出 scale
+    M1, S1 = precompute_requant_params(x1_sf, output_sf)
+    M2, S2 = precompute_requant_params(x2_sf, output_sf)
+    
+    # Requantize x1 和 x2 到輸出 scale（使用 int32 作為中間格式）
+    x1_scaled = requantize_integer(x1_int, M1, S1, output_bits=32)
+    x2_scaled = requantize_integer(x2_int, M2, S2, output_bits=32)
+    
+    # 相加（int32 + int32 -> int32）
+    y = x1_scaled.astype(np.int64) + x2_scaled.astype(np.int64)
+    
+    # Clip to output range
+    if output_bits == 8:
+        return np.clip(y, -128, 127).astype(np.int8)
+    elif output_bits == 16:
+        return np.clip(y, -32768, 32767).astype(np.int16)
+    else:
+        return np.clip(y, -2147483648, 2147483647).astype(np.int32)
+
 
 def quantize_to_int(x_float, scaling_factor, bits=8):
     """
