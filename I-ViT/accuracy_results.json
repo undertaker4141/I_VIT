@@ -1,0 +1,96 @@
+{
+  "total_images": 100,
+  "pytorch": {
+    "top1_accuracy": 0.88,
+    "top5_accuracy": 0.98,
+    "top1_correct": 88,
+    "top5_correct": 98,
+    "mean_confidence": 0.7684166605770588
+  },
+  "errors": [
+    {
+      "index": 0,
+      "image": "ILSVRC2012_val_00000293.JPEG",
+      "predicted": 394,
+      "ground_truth": 0,
+      "confidence": 0.3146829605102539
+    },
+    {
+      "index": 17,
+      "image": "ILSVRC2012_val_00003183.JPEG",
+      "predicted": 2,
+      "ground_truth": 3,
+      "confidence": 0.7368581891059875
+    },
+    {
+      "index": 20,
+      "image": "ILSVRC2012_val_00001676.JPEG",
+      "predicted": 395,
+      "ground_truth": 4,
+      "confidence": 0.5537701845169067
+    },
+    {
+      "index": 23,
+      "image": "ILSVRC2012_val_00005339.JPEG",
+      "predicted": 2,
+      "ground_truth": 4,
+      "confidence": 0.6566237211227417
+    },
+    {
+      "index": 27,
+      "image": "ILSVRC2012_val_00004698.JPEG",
+      "predicted": 6,
+      "ground_truth": 5,
+      "confidence": 0.18653827905654907
+    },
+    {
+      "index": 31,
+      "image": "ILSVRC2012_val_00002284.JPEG",
+      "predicted": 5,
+      "ground_truth": 6,
+      "confidence": 0.48320162296295166
+    },
+    {
+      "index": 36,
+      "image": "ILSVRC2012_val_00000911.JPEG",
+      "predicted": 8,
+      "ground_truth": 7,
+      "confidence": 0.46536096930503845
+    },
+    {
+      "index": 39,
+      "image": "ILSVRC2012_val_00003936.JPEG",
+      "predicted": 858,
+      "ground_truth": 7,
+      "confidence": 0.6545524597167969
+    },
+    {
+      "index": 43,
+      "image": "ILSVRC2012_val_00002372.JPEG",
+      "predicted": 428,
+      "ground_truth": 8,
+      "confidence": 0.13918504118919373
+    },
+    {
+      "index": 44,
+      "image": "ILSVRC2012_val_00004183.JPEG",
+      "predicted": 7,
+      "ground_truth": 8,
+      "confidence": 0.6439476609230042
+    },
+    {
+      "index": 90,
+      "image": "ILSVRC2012_val_00000476.JPEG",
+      "predicted": 137,
+      "ground_truth": 18,
+      "confidence": 0.6801110506057739
+    },
+    {
+      "index": 97,
+      "image": "ILSVRC2012_val_00005224.JPEG",
+      "predicted": 18,
+      "ground_truth": 19,
+      "confidence": 0.414646714925766
+    }
+  ]
+}

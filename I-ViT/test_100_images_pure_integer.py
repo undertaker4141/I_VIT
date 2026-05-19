@@ -234,23 +234,32 @@ def pure_integer_cmodel_inference(model, image_tensor, weights):
         return logits
 
 
-def get_imagenet_label(image_path):
-    """從圖片路徑提取 ImageNet 標籤"""
-    # ImageNet 驗證集結構: ImageNet/val/n01440764/ILSVRC2012_val_00000293.JPEG
-    # 類別名稱在倒數第二層
-    parts = image_path.replace('\\', '/').split('/')
-    class_name = parts[-2]  # 例如 'n01440764'
+def load_imagenet_class_to_idx():
+    """載入 ImageNet 類別名稱到索引的映射"""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    imagenet_dir = os.path.join(os.path.dirname(current_dir), 'ImageNet', 'val')
     
-    # 讀取 ImageNet 類別映射
-    # 這裡簡化處理，返回類別名稱
-    return class_name
+    class_dirs = sorted(glob.glob(os.path.join(imagenet_dir, '*')))
+    class_names = [os.path.basename(d) for d in class_dirs]
+    
+    # 創建類別名稱到索引的映射
+    class_to_idx = {class_name: idx for idx, class_name in enumerate(class_names)}
+    
+    return class_to_idx
+
+
+def get_ground_truth_label(image_path, class_to_idx):
+    """從圖片路徑獲取 ground truth 標籤"""
+    # ImageNet 驗證集結構: ImageNet/val/n01440764/ILSVRC2012_val_00000293.JPEG
+    parts = image_path.replace('\\', '/').split('/')
+    class_name = parts[-2]
+    
+    return class_to_idx.get(class_name, -1)
 
 
 def load_imagenet_class_mapping():
     """載入 ImageNet 類別映射"""
-    # 簡化版：返回類別索引映射
-    # 實際應該從 imagenet_classes.txt 讀取
-    return {}
+    return load_imagenet_class_to_idx()
 
 
 def main():
@@ -264,8 +273,13 @@ def main():
     checkpoint_path = os.path.join(current_dir, 'output_gpu', 'checkpoint_converted.pth')
     imagenet_dir = os.path.join(os.path.dirname(current_dir), 'ImageNet', 'val')
     
+    # 載入類別映射
+    print("\n[0/5] 載入類別映射...")
+    class_to_idx = load_imagenet_class_mapping()
+    print(f"✓ 已載入 {len(class_to_idx)} 個類別")
+    
     # 載入模型
-    print("\n[1/4] 載入模型...")
+    print("\n[1/5] 載入模型...")
     device = torch.device('cpu')
     model = deit_tiny_patch16_224(pretrained=False)
     
@@ -283,7 +297,7 @@ def main():
     print("✓ 模型已載入")
     
     # 提取權重
-    print("\n[2/4] 提取權重和 scaling factors...")
+    print("\n[2/5] 提取權重和 scaling factors...")
     with torch.no_grad():
         # 初始化（使用一張假圖片）
         dummy_input = torch.randn(1, 3, 224, 224)
@@ -293,21 +307,28 @@ def main():
     print("✓ 權重和 scaling factors 已提取")
     
     # 收集圖片
-    print("\n[3/4] 收集圖片...")
+    print("\n[3/5] 收集圖片...")
     image_files = []
+    ground_truth_labels = []
     
     # 從每個類別收集圖片
     class_dirs = sorted(glob.glob(os.path.join(imagenet_dir, '*')))
     
     for class_dir in class_dirs[:20]:  # 前 20 個類別
         class_images = sorted(glob.glob(os.path.join(class_dir, '*.JPEG')))
-        image_files.extend(class_images[:5])  # 每個類別 5 張圖片
+        for img_path in class_images[:5]:  # 每個類別 5 張圖片
+            image_files.append(img_path)
+            gt_label = get_ground_truth_label(img_path, class_to_idx)
+            ground_truth_labels.append(gt_label)
+            
         if len(image_files) >= 100:
             break
     
     image_files = image_files[:100]  # 確保只有 100 張
+    ground_truth_labels = ground_truth_labels[:100]
     
     print(f"✓ 已收集 {len(image_files)} 張圖片")
+    print(f"✓ Ground truth 標籤範圍: [{min(ground_truth_labels)}, {max(ground_truth_labels)}]")
     
     # 圖片預處理
     transform = transforms.Compose([
@@ -318,12 +339,13 @@ def main():
     ])
     
     # 測試
-    print("\n[4/4] 開始測試...")
+    print("\n[4/5] 開始測試...")
     
     results = {
-        'cmodel_correct': 0,
-        'pytorch_correct': 0,
-        'both_correct': 0,
+        'cmodel_top1_correct': 0,
+        'cmodel_top5_correct': 0,
+        'pytorch_top1_correct': 0,
+        'pytorch_top5_correct': 0,
         'predictions_match': 0,
         'logits_correlations': [],
         'logits_max_diffs': [],
@@ -333,7 +355,7 @@ def main():
     
     print("\n" + "="*80)
     
-    for idx, image_path in enumerate(image_files):
+    for idx, (image_path, gt_label) in enumerate(zip(image_files, ground_truth_labels)):
         if idx % 10 == 0:
             print(f"測試進度: {idx}/{len(image_files)}")
         
@@ -349,14 +371,27 @@ def main():
             results['inference_times'].append(inference_time)
             
             cmodel_pred = np.argmax(cmodel_logits)
+            cmodel_top5 = np.argsort(cmodel_logits)[-5:][::-1]
             
             # PyTorch 推論
             with torch.no_grad():
                 pytorch_output = model(image_tensor)
                 pytorch_logits = pytorch_output.cpu().numpy()[0]
                 pytorch_pred = np.argmax(pytorch_logits)
+                pytorch_top5 = np.argsort(pytorch_logits)[-5:][::-1]
             
-            # 比較
+            # 計算準確率（與 ground truth 比較）
+            if cmodel_pred == gt_label:
+                results['cmodel_top1_correct'] += 1
+            if gt_label in cmodel_top5:
+                results['cmodel_top5_correct'] += 1
+                
+            if pytorch_pred == gt_label:
+                results['pytorch_top1_correct'] += 1
+            if gt_label in pytorch_top5:
+                results['pytorch_top5_correct'] += 1
+            
+            # 比較預測一致性
             predictions_match = (cmodel_pred == pytorch_pred)
             if predictions_match:
                 results['predictions_match'] += 1
@@ -381,7 +416,18 @@ def main():
     total_images = len(image_files)
     
     print(f"\n總圖片數: {total_images}")
-    print(f"預測一致: {results['predictions_match']}/{total_images} ({results['predictions_match']/total_images*100:.2f}%)")
+    print(f"Ground Truth 標籤數: {len(set(ground_truth_labels))} 個不同類別")
+    
+    print(f"\nC-Model 準確率（與 Ground Truth 比較）:")
+    print(f"  Top-1 準確率: {results['cmodel_top1_correct']}/{total_images} ({results['cmodel_top1_correct']/total_images*100:.2f}%)")
+    print(f"  Top-5 準確率: {results['cmodel_top5_correct']}/{total_images} ({results['cmodel_top5_correct']/total_images*100:.2f}%)")
+    
+    print(f"\nPyTorch 準確率（與 Ground Truth 比較）:")
+    print(f"  Top-1 準確率: {results['pytorch_top1_correct']}/{total_images} ({results['pytorch_top1_correct']/total_images*100:.2f}%)")
+    print(f"  Top-5 準確率: {results['pytorch_top5_correct']}/{total_images} ({results['pytorch_top5_correct']/total_images*100:.2f}%)")
+    
+    print(f"\n預測一致性（C-Model vs PyTorch）:")
+    print(f"  預測一致: {results['predictions_match']}/{total_images} ({results['predictions_match']/total_images*100:.2f}%)")
     
     print(f"\nLogits 相關係數:")
     print(f"  平均: {np.mean(results['logits_correlations']):.6f}")
@@ -409,25 +455,30 @@ def main():
     print("驗證結論")
     print("="*80)
     
+    cmodel_top1_acc = results['cmodel_top1_correct'] / total_images
+    pytorch_top1_acc = results['pytorch_top1_correct'] / total_images
     avg_corr = np.mean(results['logits_correlations'])
     match_rate = results['predictions_match'] / total_images
     
-    if match_rate > 0.95 and avg_corr > 0.99:
-        print("✓✓✓ 驗證通過！")
-        print(f"  - 預測一致率: {match_rate*100:.2f}% (> 95%)")
-        print(f"  - 平均相關係數: {avg_corr:.6f} (> 0.99)")
+    print(f"\n✓✓✓ C-Model Top-1 準確率: {cmodel_top1_acc*100:.2f}%")
+    print(f"✓✓✓ PyTorch Top-1 準確率: {pytorch_top1_acc*100:.2f}%")
+    print(f"✓✓✓ 預測一致率: {match_rate*100:.2f}%")
+    print(f"✓✓✓ 平均 Logits 相關係數: {avg_corr:.6f}")
+    
+    if cmodel_top1_acc >= 0.85 and match_rate > 0.95 and avg_corr > 0.99:
         print(f"\n純整數 C-Model 通過嚴謹驗證！")
         return True
-    elif match_rate > 0.90 and avg_corr > 0.98:
-        print("✓ 驗證基本通過")
-        print(f"  - 預測一致率: {match_rate*100:.2f}%")
-        print(f"  - 平均相關係數: {avg_corr:.6f}")
+    elif cmodel_top1_acc >= 0.80 and match_rate > 0.90 and avg_corr > 0.98:
         print(f"\n純整數 C-Model 表現良好")
         return True
     else:
-        print("⚠ 驗證需要改進")
-        print(f"  - 預測一致率: {match_rate*100:.2f}%")
-        print(f"  - 平均相關係數: {avg_corr:.6f}")
+        print(f"\n需要進一步優化")
+        if cmodel_top1_acc < 0.80:
+            print(f"  - C-Model 準確率偏低（< 80%）")
+        if match_rate < 0.90:
+            print(f"  - 預測一致率偏低（< 90%）")
+        if avg_corr < 0.98:
+            print(f"  - Logits 相關係數偏低（< 0.98%）")
         return False
 
 

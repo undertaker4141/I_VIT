@@ -4,17 +4,20 @@
 目標：使用純 NumPy 實現完整的 ViT 推論，不依賴 PyTorch
 
 特點：
-1. 所有運算都是純整數（int8, int16, int32, int64）
+1. 所有運算都是純整數（int8, int16, int32；GELU/Softmax 中間計算使用 int64）
 2. 不依賴 PyTorch，只使用 NumPy
 3. 完全匹配 PyTorch IntLayerNorm/IntGELU/IntSoftmax 的算法
 4. 可以直接轉換為 RTL 實現
 
+註：int64 只用於 GELU 和 Softmax 的指數運算中間值，最終輸出仍是 int32。
+    詳見 docs/cmodel/INT64_USAGE_EXPLANATION.md
+
 模組：
-- LayerNorm: 純整數實現
+- LayerNorm: 純整數實現（int32）
 - Dense/Linear: int8 @ int8 -> int32
 - MatMul: int8 @ int8 -> int32
-- GELU: 整數指數運算 + sigmoid
-- Softmax: 整數指數運算 + 歸一化
+- GELU: 整數指數運算 + sigmoid（中間值 int64，輸出 int32）
+- Softmax: 整數指數運算 + 歸一化（中間值 int64，輸出 int32）
 - QuantAct: 量化激活函數（requantization）
 """
 
@@ -58,9 +61,9 @@ def int_layer_norm(x_int, bias_int, weight, bias, dim_sqrt):
     y_sq_int = y_int ** 2
     var_int = np.sum(y_sq_int, axis=-1, keepdims=True)
     
-    # Step 4: Newton iteration for sqrt
+    # Step 4: Newton iteration for sqrt (increased to 20 for better precision)
     k = np.full_like(var_int, 2 ** 16, dtype=np.float64)
-    for _ in range(10):
+    for _ in range(20):
         k_1 = np.floor((k + np.floor(var_int / k)) / 2)
         k = k_1
     std_int = k
@@ -68,8 +71,8 @@ def int_layer_norm(x_int, bias_int, weight, bias, dim_sqrt):
     # Step 5: Normalization factor
     factor = np.floor((2 ** 31 - 1) / std_int)
     
-    # Step 6: Normalize
-    y_int_normalized = np.floor(y_int * factor / 2)
+    # Step 6: Normalize (using round for better precision)
+    y_int_normalized = np.round(y_int * factor / 2)
     
     # Step 7: Add bias
     output_int = y_int_normalized + bias_int

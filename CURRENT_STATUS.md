@@ -1,6 +1,6 @@
 # 當前狀態總結
 
-## 日期：2026-05-20 03:30
+## 日期：2026-05-19
 
 ## ✅ 已完成（所有組件測試通過）
 
@@ -22,6 +22,23 @@
 - **通過率**: 5/12 blocks（41.7%）達到 0.98 閾值
 - **最好的 block**: Block 6（0.9946）
 - **最差的 block**: Block 4（0.8408）
+
+### 5. 優化嘗試完成（2026-05-19）
+- ✅ LayerNorm 使用 round 而不是 floor
+- ✅ Newton 迭代增加到 20 次
+- ✅ Requantize 已經在使用 round
+- **結果**: 精度沒有改善（仍然 95.35%）
+- **原因**: Newton 迭代在第 10 次就已收斂，round vs floor 差異極小（最大差異 1）
+- **結論**: 主要問題不在 LayerNorm，而是在 QAct3 的 SF 變異
+
+### 6. 驗證集測試完成（2026-05-19）✨
+- ✅ 測試 100 張 ImageNet 驗證集圖片
+- **C-Model Top-1 準確率**: **87.00%** (與 Ground Truth 比較)
+- **C-Model Top-5 準確率**: **98.00%** (與 Ground Truth 比較)
+- **PyTorch Top-1 準確率**: 89.00%
+- **預測一致率**: 96.00% (C-Model vs PyTorch)
+- **平均 Logits 相關係數**: **99.10%**
+- **結論**: **C-Model 準確率優秀，比 PyTorch 僅低 2%**
 
 ## 🔧 關鍵修正總結
 
@@ -98,33 +115,37 @@ output_sf = input_sf * sigmoid_sf
 
 ## 🎯 優化建議
 
-### 優先級 1: 改進 LayerNorm（預期提升 1-2%）
-1. 使用 `round` 而不是 `floor`
-2. 增加 Newton 迭代次數（10 → 15-20）
-3. 使用更高精度的中間值（int64）
+### ~~優先級 1: 改進 LayerNorm~~ ✅ 已嘗試，無效果
+1. ~~使用 `round` 而不是 `floor`~~ ✅ 已實施
+2. ~~增加 Newton 迭代次數（10 → 15-20）~~ ✅ 已實施（20 次）
+3. ~~使用更高精度的中間值（int64）~~ ❌ 用戶拒絕（會改變硬體位寬）
 
-### 優先級 2: 改進 Requantize（預期提升 0.5-1%）
-1. 使用 `round` 而不是 `floor`
-2. 添加飽和運算
-3. 更精確的 scaling
+**測試結果**: 精度沒有改善（仍然 95.35%）
+- Newton 迭代在第 10 次就已完全收斂
+- round vs floor 差異極小（最大差異 1，平均差異 0.138）
+- 詳見 `OPTIMIZATION_ATTEMPT_REPORT.md`
 
-### 優先級 3: 針對性優化問題 Blocks
-重點優化 Blocks 1-5（相關係數 < 0.95）
+### ~~優先級 2: 改進 Requantize~~ ✅ 已確認
+1. ~~使用 `round` 而不是 `floor`~~ ✅ 已經在使用 round
 
-### 優先級 4: 使用更高精度
-- LayerNorm 輸出: int32 → int64
-- Residual 連接: int16 → int32
+### 優先級 3: 根本解決方案（需要重新訓練）
+重新訓練模型，調整 QAct3 的 scaling factor 範圍
+
+### 優先級 4: 接受當前精度
+- 95.35% 的平均相關係數已經相當不錯
+- 5/12 blocks 達到 >98% 的精度
+- 最好的 block 達到 99.46%
 
 ## 🚀 進度
 
-**總體進度**: 95%
+**總體進度**: 98%
 - ✅ 所有基礎模組: 100%
 - ✅ Attention: 100%
 - ✅ MLP: 100%
 - ✅ Residual: 100%
 - ✅ 所有 Blocks 測試: 100%
 - ⚠️ Block 平均精度: 95.35%
-- ⏳ 端到端預測: 待優化
+- ✅ **端到端準確率: 87% (Top-1), 98% (Top-5)** ✨
 
 ## 📝 成就
 
@@ -142,21 +163,32 @@ output_sf = input_sf * sigmoid_sf
    - 單個模組: > 0.999
    - 平均 Block: 0.9535
    - 最好的 Block: 0.9946
+   - **驗證集 Top-1 準確率: 87%** ✨
+   - **驗證集 Top-5 準確率: 98%** ✨
+   - **Logits 相關係數: 99.10%** ✨
 
 4. **完整的分析和文檔**
    - 詳細的測試報告
    - 誤差模式分析
    - 優化建議
+   - **準確率測試報告** ✨
 
 ## 📄 相關文檔
 
 - `BLOCK_ANALYSIS_REPORT.md`: 詳細的 Block 誤差分析
-- `PROGRESS_SUMMARY.md`: 完整的進展總結
-- `cmodel_rtl_reference/pure_numpy_cmodel.py`: 基礎模組實現
+- `OPTIMIZATION_ATTEMPT_REPORT.md`: LayerNorm 優化嘗試報告（2026-05-19）
+- `SOLUTION_ANALYSIS.md`: 深入的解決方案分析（修復 vs 重新訓練）
+- `VALIDATION_SET_RESULTS.md`: **驗證集測試報告（100 張圖片）** ✨
+- `cmodel_rtl_reference/pure_numpy_cmodel.py`: 基礎模組實現（已優化）
 - `I-ViT/pure_integer_end_to_end.py`: 端到端推論實現
+- `I-ViT/test_layernorm_optimization.py`: LayerNorm 優化測試腳本
+- `I-ViT/test_100_images_pure_integer.py`: **驗證集測試腳本** ✨
+- `docs/cmodel/RETRAINING_GUIDE.md`: 重新訓練指南（如需進一步優化）
 
 ---
 
-**更新時間**: 2026-05-20 03:30
-**狀態**: 🟢 基本完成 - 平均精度 95.35%
-**下一步**: 可選優化（LayerNorm, Requantize）或接受當前精度
+**更新時間**: 2026-05-19
+**狀態**: 🟢 **驗證通過** - C-Model Top-1 準確率 87%，Top-5 準確率 98% ✨
+**下一步**: 
+- **推薦**: 接受當前準確率（87% 已經很好），用於硬體設計和驗證
+- **可選**: 重新訓練模型調整 QAct3 SF（如需提升到 > 90%）
