@@ -1,0 +1,3 @@
+Image Path: ImageNet/val/n01496331/ILSVRC2012_val_00000921.JPEG
+Class Directory: n01496331
+Ground Truth Index: 5
