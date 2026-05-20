@@ -51,9 +51,9 @@ LayerNorm 的 Newton iteration 使用 float64 計算 sqrt，但每步都使用 `
 
 ### 迭代次數
 
-C-Model 使用 **20 次** Newton iteration，RTL template 目前使用 10 次。
+C-Model 使用 **10 次** Newton iteration（與 PyTorch 一致）。
 
-**建議**: RTL 也改為 20 次以保持一致性。
+**重要**: 所有實現都必須使用 10 次迭代以保持一致性。
 
 ## 測試
 

@@ -114,9 +114,16 @@ def int_gelu_kernel_fixed(x_int, x0_int, output_bit=8, n=23):
 
     factor = (2**31 - 1) // exp_int_sum_safe
 
-    # 4. 位移量計算
+    # 4. 位移量計算（P1 修復：使用明確的 int64）
     shift_amt = 31 - output_bit + 1  # 預設為 24
-    term = exp_int.astype(object) * factor.astype(object)
+    
+    # 明確使用 int64 乘法（不使用 object）
+    exp_int64 = exp_int.astype(np.int64)
+    factor_int64 = factor.astype(np.int64)
+    
+    # 64-bit 乘法（最大值 ~2^62，不會溢出 int64）
+    term = exp_int64 * factor_int64
+    
     sigmoid_int = (term >> shift_amt).astype(np.int64)
 
     # 5. Output
@@ -127,7 +134,7 @@ def int_gelu_kernel_fixed(x_int, x0_int, output_bit=8, n=23):
 # ============================================================
 # 3. Softmax
 # ============================================================
-def int_softmax_kernel_fixed(x_int, x0_int, output_bit=8, n=16):
+def int_softmax_kernel_fixed(x_int, x0_int, output_bit=8, n=15):
     """
     TVM 對齊版 INT-Softmax
     演算法流 (Algorithm Flow):
@@ -166,9 +173,16 @@ def int_softmax_kernel_fixed(x_int, x0_int, output_bit=8, n=16):
     # Division
     factor = (2**31 - 1) // exp_int_sum_safe
 
-    # 4. Final out
+    # 4. Final out（P1 修復：使用明確的 int64）
     shift_amt = 31 - output_bit + 1  # = 24
-    term = exp_int.astype(object) * factor.astype(object)
+    
+    # 明確使用 int64 乘法（不使用 object）
+    exp_int64 = exp_int.astype(np.int64)
+    factor_int64 = factor.astype(np.int64)
+    
+    # 64-bit 乘法（最大值 ~2^62，不會溢出 int64）
+    term = exp_int64 * factor_int64
+    
     output = (term >> shift_amt).astype(np.int64)
 
     return output.astype(np.int32)

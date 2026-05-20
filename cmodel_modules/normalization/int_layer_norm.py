@@ -64,9 +64,9 @@ def int_layer_norm(x_int, bias_int, weight, bias, dim_sqrt):
     y_sq_int = y_int ** 2
     var_int = np.sum(y_sq_int, axis=-1, keepdims=True)
     
-    # Step 4: Newton iteration for sqrt (increased to 20 for better precision)
+    # Step 4: Newton iteration for sqrt (10 iterations, matching PyTorch)
     k = np.full_like(var_int, 2 ** 16, dtype=np.float64)
-    for _ in range(20):
+    for _ in range(10):
         k_1 = np.floor((k + np.floor(var_int / k)) / 2)
         k = k_1
     std_int = k
@@ -74,8 +74,8 @@ def int_layer_norm(x_int, bias_int, weight, bias, dim_sqrt):
     # Step 5: Normalization factor
     factor = np.floor((2 ** 31 - 1) / std_int)
     
-    # Step 6: Normalize (using round for better precision)
-    y_int_normalized = np.round(y_int * factor / 2)
+    # Step 6: Normalize (using floor, matching PyTorch)
+    y_int_normalized = np.floor(y_int * factor / 2)
     
     # Step 7: Add bias
     output_int = y_int_normalized + bias_int
