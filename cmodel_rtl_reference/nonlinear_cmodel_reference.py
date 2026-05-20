@@ -59,10 +59,15 @@ def int_exp_shift_kernel_standard(x_int, x0_int, n):
     res = np.zeros_like(exp_int)
     pos_mask = shift >= 0
     if np.any(pos_mask):
-        res[pos_mask] = np.left_shift(exp_int[pos_mask], shift[pos_mask])
+        # 限制位移量避免溢位（最大 62 bit）
+        shift_clamped = np.minimum(shift[pos_mask], 62)
+        res[pos_mask] = np.left_shift(exp_int[pos_mask], shift_clamped)
     neg_mask = shift < 0
     if np.any(neg_mask):
-        res[neg_mask] = np.right_shift(exp_int[neg_mask], -shift[neg_mask])
+        # 限制位移量避免溢位（最大 62 bit）
+        shift_abs = np.abs(shift[neg_mask])
+        shift_clamped = np.minimum(shift_abs, 62)
+        res[neg_mask] = np.right_shift(exp_int[neg_mask], shift_clamped)
 
     return np.maximum(res, 0)
 
