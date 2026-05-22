@@ -1,6 +1,29 @@
 # 當前狀態總結
 
-**最後更新**: 2026-05-20
+**最後更新**: 2026-05-22
+
+---
+
+## 🎉 最新完成：Nonlinear 模組驗證 (2026-05-22)
+
+### ✅ 所有 Nonlinear 模組驗證通過
+
+**驗證模組**: LayerNorm, GELU, Softmax
+
+**驗證結果**:
+- ✅ Golden Patterns 完整性驗證通過（17 個 patterns）
+- ✅ LayerNorm 輸出統計正常（使用 Golden Patterns）
+- ✅ GELU 基本功能正常（隨機數據測試）
+- ✅ Softmax 基本功能正常（隨機數據測試）
+
+**RTL 驗證準備**:
+- 可使用 `cmodel_modules/` 目錄下的模組化實現
+- Golden patterns 可用於 RTL 驗證
+- 所有模組都有詳細文檔和單元測試
+
+**詳細報告**: `NONLINEAR_MODULES_VERIFICATION_REPORT.md` ⭐
+
+**驗證腳本**: `I-ViT/test_nonlinear_modules.py`
 
 ---
 
@@ -57,6 +80,13 @@
    - 完整的文檔（6 個 README 文件）
    - 模組化設計，方便 RTL 對照實現
    - 詳細報告: `CMODEL_MODULES_COMPLETION_REPORT.md`
+
+7. **Nonlinear 模組驗證** ✅ (2026-05-22)
+   - 完成 LayerNorm, GELU, Softmax 驗證
+   - 使用 Golden Patterns 驗證 LayerNorm 輸出統計
+   - 使用隨機數據驗證 GELU 和 Softmax 基本功能
+   - 所有模組驗證通過，可供 RTL team 使用
+   - 詳細報告: `NONLINEAR_MODULES_VERIFICATION_REPORT.md`
 
 ---
 
@@ -173,12 +203,16 @@
 - `RTL_READINESS_ASSESSMENT.md` - RTL 落地性評估報告
 - `RTL_FIX_PLAN.md` - 詳細修復計劃
 - `P0_P1_FIX_ACCEPTANCE_REPORT.md` - P0 和 P1 修復驗收報告 ✅
+- `NONLINEAR_MODULES_VERIFICATION_REPORT.md` - Nonlinear 模組驗證報告 ✅ 新增
 
 ### C-Model 實現
 - `cmodel_rtl_reference/pure_numpy_cmodel.py` - 純整數 C-Model（P0 & P1 修復完成）✅
+- `cmodel_rtl_reference/pytorch_integer_cmodel.py` - PyTorch 一致版本 C-Model ✅
+- `cmodel_modules/` - 模組化 C-Model 實現（推薦 RTL team 使用）✅
 
 ### 測試腳本
 - `I-ViT/test_p0_p1_fixes.py` - P0 和 P1 修復驗收測試 ✅
+- `I-ViT/test_nonlinear_modules.py` - Nonlinear 模組驗證測試 ✅ 新增
 - `I-ViT/test_100_images_pure_integer.py` - 驗證集測試（100 張圖片）
 - `I-ViT/test_all_blocks.py` - Block-level 精度測試（需使用新實現重跑）
 
