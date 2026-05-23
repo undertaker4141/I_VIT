@@ -63,6 +63,7 @@ I_VIT/
 
 ## 驗證結果
 
+### 模型準確率
 ```
 QAT Accuracy: 73.35% (Top-1), 91.80% (Top-5)
 Pattern Files: 1829
@@ -70,6 +71,19 @@ M/S Reconstruction Error: 0.000000%
 ```
 
 > ⚠️ **注意**: 上述準確率高於論文 (72.24%) 是因為我們使用 ImageNet Validation Set 同時作為訓練和驗證集 (Data Leakage)。這不影響 Pattern 抽取的正確性，但不代表真實泛化能力。如需真實準確率，請使用完整的 ImageNet Train Set (138GB) 進行訓練。
+
+### RTL 驗證結果 ✅
+
+所有非線性模組的 RTL 實現已通過完整驗證（2026/5/23）：
+
+| 模組 | 測試案例 | 總資料量 | 錯誤數 | 狀態 |
+|------|---------|---------|--------|------|
+| LayerNorm | 25 | 945,600 | 0 | ✅ 通過 (Bit-exact) |
+| GELU | 12 | 1,815,552 | 0 | ✅ 通過 (Bit-exact) |
+| Softmax | 12 | 1,397,124 | 0 | ✅ 通過 (Bit-exact) |
+| **總計** | **49** | **4,158,276** | **0** | ✅ **全部通過** |
+
+詳細報告：[NONLINEAR_VERIFICATION_COMPLETE.md](NONLINEAR_VERIFICATION_COMPLETE.md)
 
 ## License
 
