@@ -26,7 +26,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'cmo
 
 from models.vit_quant import deit_tiny_patch16_224
 from pure_numpy_cmodel import (
-    int_layer_norm,
     int_dense,
     int_gelu,
     int_softmax,
@@ -36,6 +35,7 @@ from pure_numpy_cmodel import (
     quant_act_residual_integer,
     precompute_requant_params
 )
+from pytorch_integer_cmodel import pytorch_int_layer_norm
 
 
 def extract_scaling_factor(sf):
@@ -256,27 +256,27 @@ def pure_integer_mlp(x_int8, x_sf, block_weights):
     fc1_fc_sf = block_weights['fc1_fc_scaling_factor']
     fc1_sf = x_sf * fc1_fc_sf  # per-channel
     
-    # 使用 mlp_qact1_sf 作為目標 scaling factor
-    fc1_int8 = requantize_integer(fc1_int32, fc1_sf, mlp_qact1_sf, output_bits=8)
+    # 使用 mlp_qact_gelu_sf 作為目標 scaling factor (FC1 的輸出經過 QuantAct 成為 GELU 的輸入)
+    fc1_int8 = requantize_integer(fc1_int32, fc1_sf, mlp_qact_gelu_sf, output_bits=8)
     
     # Step 3: GELU
-    gelu_int32 = int_gelu(fc1_int8.astype(np.int32), mlp_qact1_sf, output_bit=8, n=23)
+    gelu_int32 = int_gelu(fc1_int8.astype(np.int32), mlp_qact_gelu_sf, output_bit=8, n=23)
     
     # PyTorch IntGELU 的輸出 SF 計算：
     # output_sf = input_sf * sigmoid_sf
     # 其中 sigmoid_sf = 1 / 2^(output_bit-1) = 1/128
     sigmoid_sf = 1.0 / (2 ** (8 - 1))
-    gelu_output_sf = mlp_qact1_sf * sigmoid_sf
+    gelu_output_sf = mlp_qact_gelu_sf * sigmoid_sf
     
-    # 使用 mlp_qact_gelu_sf 作為目標 scaling factor
-    gelu_int8 = requantize_integer(gelu_int32, gelu_output_sf, mlp_qact_gelu_sf, output_bits=8)
+    # 使用 mlp_qact1_sf 作為目標 scaling factor (GELU 輸出經過 QuantAct 成為 FC2 的輸入)
+    gelu_int8 = requantize_integer(gelu_int32, gelu_output_sf, mlp_qact1_sf, output_bits=8)
     
     # Step 4: FC2 (int8 @ int8 -> int32)
     fc2_int32 = int_dense(gelu_int8, block_weights['fc2_weight_int'], block_weights['fc2_bias_int'])
     
     # Step 5: 計算 FC2 scaling factor 並 requantize (保持 per-channel)
     fc2_fc_sf = block_weights['fc2_fc_scaling_factor']
-    fc2_sf = mlp_qact_gelu_sf * fc2_fc_sf  # per-channel
+    fc2_sf = mlp_qact1_sf * fc2_fc_sf  # per-channel
     
     # 使用 mlp_qact2_sf 作為目標 scaling factor
     output_int16 = requantize_integer(fc2_int32, fc2_sf, mlp_qact2_sf, output_bits=16)
@@ -306,7 +306,7 @@ def pure_integer_transformer_block(x_int16, x_sf, block_weights, dim_sqrt, block
     # ============================================================
     # Norm1 (純整數)
     # ============================================================
-    x_norm1_int32 = int_layer_norm(
+    x_norm1_int32 = pytorch_int_layer_norm(
         x_int16.astype(np.float64),
         block_weights['norm1_bias_int'],
         block_weights['norm1_weight'],
@@ -346,7 +346,7 @@ def pure_integer_transformer_block(x_int16, x_sf, block_weights, dim_sqrt, block
     # ============================================================
     # Norm2 (純整數)
     # ============================================================
-    x_norm2_int32 = int_layer_norm(
+    x_norm2_int32 = pytorch_int_layer_norm(
         x_int16.astype(np.float64),
         block_weights['norm2_bias_int'],
         block_weights['norm2_weight'],
@@ -434,6 +434,42 @@ def pure_integer_inference(model, image_tensor, weights):
         dim_sqrt = np.sqrt(x_int16.shape[-1])
         x_sf = x_scaling_factor_np
         
+        # 獲取 PyTorch Block 0 的所有中間結果
+        pt_b0_tensors = {}
+        def get_hook(name):
+            def hook(module, input, output):
+                if isinstance(output, tuple):
+                    pt_b0_tensors[name] = (output[0].detach().cpu().numpy(), extract_scaling_factor(output[1]))
+                else:
+                    pt_b0_tensors[name] = output.detach().cpu().numpy()
+            return hook
+            
+        b0 = model.blocks[0]
+        handles = [
+            b0.norm1.register_forward_hook(get_hook('norm1')),
+            b0.qact1.register_forward_hook(get_hook('qact1')),
+            b0.attn.qkv.register_forward_hook(get_hook('qkv')),
+            b0.attn.matmul_1.register_forward_hook(get_hook('matmul_1')),
+            b0.attn.int_softmax.register_forward_hook(get_hook('softmax')),
+            b0.attn.matmul_2.register_forward_hook(get_hook('matmul_2')),
+            b0.attn.proj.register_forward_hook(get_hook('proj')),
+            b0.attn.register_forward_hook(get_hook('attn')),
+            b0.qact2.register_forward_hook(get_hook('qact2')),
+            b0.norm2.register_forward_hook(get_hook('norm2')),
+            b0.qact3.register_forward_hook(get_hook('qact3')),
+            b0.mlp.fc1.register_forward_hook(get_hook('fc1')),
+            b0.mlp.qact_gelu.register_forward_hook(get_hook('gelu')),
+            b0.mlp.fc2.register_forward_hook(get_hook('fc2')),
+            b0.mlp.register_forward_hook(get_hook('mlp')),
+            b0.qact4.register_forward_hook(get_hook('qact4')),
+        ]
+            
+        with torch.no_grad():
+            _ = model(image_tensor)
+            
+        for h in handles:
+            h.remove()
+        
         for block_idx in range(len(model.blocks)):
             block_start = time.time()
             
@@ -445,11 +481,15 @@ def pure_integer_inference(model, image_tensor, weights):
             )
             
             block_time = (time.time() - block_start) * 1000
+            print(f"  Block {block_idx}: {block_time:.2f} ms")
             
-            if block_idx % 3 == 0 or block_idx == len(model.blocks) - 1:
-                print(f"  Block {block_idx}: {block_time:.2f} ms, int16 range=[{x_int16.min()}, {x_int16.max()}], sf={x_sf:.6f}")
-        
-        print(f"  ✓ 所有 blocks 完成（純整數運算）")
+            # 在 Block 0 進行詳細比較
+            if block_idx == 0:
+                print("    --- Block 0 內部詳細比較 ---")
+                
+                # 這裡需要呼叫 pure_integer_transformer_block，但我已經拿到結果 x_int16
+                # 等等，為了能詳細比對，我需要修改 pure_integer_transformer_block 也能返回中間結果
+                pass
         
         # ============================================================
         # Stage 3: Classification Head (使用 PyTorch)

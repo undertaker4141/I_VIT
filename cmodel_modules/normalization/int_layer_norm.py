@@ -77,13 +77,13 @@ def int_layer_norm(x_int, bias_int, weight, bias, dim_sqrt):
     # Step 6: Normalize (using floor, matching PyTorch)
     y_int_normalized = np.floor(y_int * factor / 2)
     
-    # Step 7: Add bias
+    # Add bias
     output_int = y_int_normalized + bias_int
     
-    # Clip to int32 range before casting
-    output_int = np.clip(output_int, -2**31, 2**31 - 1)
+    # Cast to int64 first to allow wraparound, then downcast to int32 (simulating hardware 32-bit adder)
+    output_int = output_int.astype(np.int64).astype(np.int32)
     
-    return output_int.astype(np.int32)
+    return output_int
 
 
 # ==================================================================

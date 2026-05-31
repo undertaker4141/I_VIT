@@ -236,16 +236,14 @@ def int_layer_norm_fixed(x_int, bias_int):
     x_val = x_int.astype(np.int32)
     N = x_val.shape[-1]
 
-    # 1. 為了模擬 TVM 中 sum 累積時的 int16 型別轉換特性
+    # 计算 Mean (使用 round half to even，對應 Verilog 中的 round_away 邏輯)
     sum_val = np.sum(x_val, axis=-1, keepdims=True)
-    sum_wrapped = sum_val.astype(np.int16).astype(np.int32)
-    
-    # 計算 Mean (truncated division towards zero)
-    mean_int = np.fix(sum_wrapped / N).astype(np.int32)
+    mean_int = np.round(sum_val / N).astype(np.int32)
 
-    # 2. Center 過程同樣有 int16 特性
+    # 2. Center过程
     y_int = x_val - mean_int
-    y_int = y_int.astype(np.int16).astype(np.int32)
+    # RTL uses 32-bit y_int, no need to wrap to int16
+    y_int = y_int.astype(np.int32)
 
     # 3. Square → 放入 uint32 累加 Variance
     data_sq = (y_int.astype(np.int32) * y_int.astype(np.int32)).astype(np.uint32)
@@ -269,9 +267,9 @@ def int_layer_norm_fixed(x_int, bias_int):
     
     # 這裡會提升到 int64 來模擬硬體暫存器避免乘法溢位
     term = factor_div_std.astype(np.int64) * y_int32.astype(np.int64)
-    # C++ truncated division by 2 towards zero
-    y_norm = np.where(term >= 0, term // 2, -((-term) // 2)).astype(np.int32)
+    # Verilog bit slicing [32:1] acts as arithmetic right shift (floor division)
+    y_norm = (term >> 1).astype(np.int32)
     
-    # 6. Add bias
-    output_int = y_norm + bias_int.astype(np.int32)
+    # 6. Add bias (cast to int64 first to allow wraparound, otherwise numpy float64->int32 clips)
+    output_int = y_norm + bias_int.astype(np.int64).astype(np.int32)
     return output_int

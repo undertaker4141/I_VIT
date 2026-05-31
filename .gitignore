@@ -27,3 +27,8 @@ output_gpu.zip
 # Ignore entire output_gpu directory
 I-ViT/output_gpu/
 
+# Debug logs and hex files
+*.log
+*.hex
+I-ViT/scratch/
+

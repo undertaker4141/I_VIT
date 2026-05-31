@@ -1,380 +1,297 @@
-"""
-使用 PyTorch Integer C-Model 生成整數測試向量
-直接從實際模型推論生成整數中間結果
-包含 LayerNorm, GELU, Softmax 的測試向量
-
-GELU 使用 C-Model Reference 計算輸出，確保與 RTL 完全一致
-"""
-
-import numpy as np
-import sys
 import os
-import torch
-from PIL import Image
-import torchvision.transforms as transforms
+import sys
+import numpy as np
+import json
+from pathlib import Path
 
-sys.path.insert(0, 'models')
-sys.path.insert(0, '../cmodel_rtl_reference')
+# Add paths to import pure_numpy_cmodel and linear/nonlinear reference
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(ROOT_DIR)
 
-from models.vit_quant import deit_tiny_patch16_224
-from nonlinear_cmodel_reference import int_gelu_kernel_fixed
+from cmodel_rtl_reference.linear_cmodel_reference import int_dense_kernel, int_matmul_kernel
+from cmodel_rtl_reference.nonlinear_cmodel_reference import (
+    int_layer_norm_fixed,
+    int_gelu_kernel_fixed,
+    int_softmax_kernel_fixed
+)
 
-def save_hex_file(data, filename):
-    """儲存為 hex 檔案供 Verilog 讀取"""
+def get_eff_scale_ms(in_scale, out_scale, max_bit=31):
+    eff_scale = in_scale / out_scale
+    mantissa, exponent = np.frexp(eff_scale)
+    M = np.round(mantissa * (2 ** max_bit)).astype(np.int64)
+    S = (max_bit - exponent).astype(np.int64)
+    return M, S
+
+def save_hex_file(data, filename, is_int8=False):
     with open(filename, 'w') as f:
         for val in data.flatten():
-            # 處理負數（2's complement）
-            if val < 0:
-                val = (1 << 32) + val  # 轉換為 unsigned
+            val = int(val)
+            if val < 0: val = (1 << 32) + val
             f.write(f"{val & 0xFFFFFFFF:08x}\n")
 
-# 全域變數用於收集 GELU 和 Softmax 的中間結果
-gelu_inputs = []
-gelu_outputs = []
-softmax_inputs = []
-softmax_outputs = []
+def save_hex_file_16(data, filename):
+    with open(filename, 'w') as f:
+        for val in data.flatten():
+            val = int(val)
+            if val < 0: val = (1 << 32) + val
+            f.write(f"{val & 0xFFFFFFFF:08x}\n")
 
-def hook_gelu_input(module, input, output):
-    """Hook 函數：捕獲 GELU 輸入（fc1 輸出後，qact_gelu 輸出）"""
-    # output 是 tuple (dequantized_tensor, scaling_factor)
-    # 我們需要整數值，所以要除以 scaling_factor
-    if isinstance(output, tuple):
-        dequant_tensor = output[0].detach()
-        scaling_factor = output[1]
-        # 轉回整數：x_int = dequant_tensor / scaling_factor
-        x_int = (dequant_tensor / scaling_factor).cpu().numpy()
-        # 四捨五入並轉換為 int32
-        gelu_inputs.append(np.round(x_int).astype(np.int32))
-        # 調試：打印第一個 block 的 scaling factor
-        if len(gelu_inputs) == 1:
-            print(f"  DEBUG: GELU input scaling_factor = {scaling_factor}")
-    else:
-        gelu_inputs.append(output.detach().cpu().numpy().astype(np.int32))
+class ExtractorCModel:
+    def __init__(self, tvm_patterns_dir, out_dir):
+        self.tvm_dir = Path(tvm_patterns_dir)
+        self.out_dir = Path(out_dir)
+        self.weights_dir = self.tvm_dir / 'weights'
+        self.scales_dir = self.tvm_dir / 'scales'
+        
+        self.out_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Counters
+        self.ln_count = 0
+        
+    def _load_w(self, name):
+        return np.load(self.weights_dir / f"{name}.npy")
+    
+    def _load_s(self, name):
+        p = self.scales_dir / f"{name}_float.npy"
+        if p.exists():
+            return np.load(p).flatten()
+        return None
 
-def hook_gelu_output(module, input, output):
-    """Hook 函數：捕獲 GELU 輸出（act 輸出）"""
-    # 注意：我們不再使用 PyTorch 的輸出，而是使用 C-Model Reference 計算
-    # 這個 hook 只是為了觸發計算，實際輸出會在後處理中使用 C-Model 生成
-    pass
-
-def hook_softmax_input(module, input, output):
-    """Hook 函數：捕獲 Softmax 輸入（qact_attn1 輸出）"""
-    # output 是 tuple (tensor, scaling_factor)
-    if isinstance(output, tuple):
-        softmax_inputs.append(output[0].detach().cpu().numpy().astype(np.int32))
-    else:
-        softmax_inputs.append(output.detach().cpu().numpy().astype(np.int32))
-
-def hook_softmax_output(module, input, output):
-    """Hook 函數：捕獲 Softmax 輸出（int_softmax 輸出）"""
-    # output 是 tuple (dequantized_tensor, scaling_factor)
-    # 我們需要整數值，所以要除以 scaling_factor
-    if isinstance(output, tuple):
-        dequant_tensor = output[0].detach()
-        scaling_factor = output[1]
-        # 轉回整數：x_int = dequant_tensor / scaling_factor
-        x_int = (dequant_tensor / scaling_factor).cpu().numpy()
-        # 四捨五入並轉換為 int32
-        softmax_outputs.append(np.round(x_int).astype(np.int32))
-    else:
-        softmax_outputs.append(output.detach().cpu().numpy().astype(np.int32))
-
-def main():
-    global gelu_inputs, gelu_outputs, softmax_inputs, softmax_outputs
-    
-    print("=" * 70)
-    print("使用 PyTorch Integer C-Model 生成整數測試向量")
-    print("包含 LayerNorm, GELU, Softmax 的中間結果")
-    print("=" * 70)
-    print()
-    
-    # 載入模型
-    print("[1/5] 載入模型...")
-    device = torch.device('cpu')
-    model = deit_tiny_patch16_224(pretrained=False)
-    
-    checkpoint_path = 'output_gpu/checkpoint_converted.pth'
-    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
-    state_dict = checkpoint['model']
-    
-    filtered_state_dict = {}
-    for key, value in state_dict.items():
-        if 'output_integer' in key or 'norm_scaling_factor' in key:
-            continue
-        filtered_state_dict[key] = value
-    
-    model.load_state_dict(filtered_state_dict, strict=False)
-    model.eval()
-    print("  ✅ 模型已載入")
-    
-    # 提取每個 block 的 GELU x0_int
-    print()
-    print("  提取 GELU x0_int 參數...")
-    gelu_x0_ints = []
-    for i in range(12):
-        key = f'blocks.{i}.mlp.qact_gelu.act_scaling_factor'
-        if key in state_dict:
-            sf = state_dict[key]
-            if isinstance(sf, torch.Tensor):
-                sf = sf.item()
-            sf_sig = sf * 1.702
-            x0_int = int(np.floor(-1.0 / sf_sig))
-            gelu_x0_ints.append(x0_int)
-            print(f"    Block {i}: x0_int = {x0_int}")
+    def int_requantize(self, data, in_scale, out_scale, out_dtype):
+        M, S = get_eff_scale_ms(in_scale, out_scale)
+        M_arr = M.flatten().reshape(1, 1, -1) if M.size > 1 else M
+        S_arr = S.flatten().reshape(1, 1, -1) if S.size > 1 else S
+        
+        data_int64 = data.astype(np.int64)
+        M_int64 = M_arr.astype(np.int64)
+        S_int64 = S_arr.astype(np.int64)
+        
+        add_val = np.left_shift(np.int64(1), S_int64 - 1)
+        result = np.right_shift((data_int64 * M_int64) + add_val, S_int64)
+        
+        if out_dtype == np.int8:
+            result = np.clip(result, -128, 127).astype(np.int8)
+        elif out_dtype == np.int16:
+            result = np.clip(result, -32768, 32767).astype(np.int16)
         else:
-            gelu_x0_ints.append(-10)  # 預設值
-            print(f"    Block {i}: x0_int = -10 (預設)")
-    
-    print()
-    print("  ✅ 已提取所有 x0_int 參數")
-    print()
-    
-    # 註冊 hooks 以捕獲 GELU 和 Softmax 的中間結果
-    print("[2/5] 註冊 hooks...")
-    for block_idx, block in enumerate(model.blocks):
-        # GELU: 在 MLP 中
-        # qact_gelu 輸出 -> GELU 輸入
-        block.mlp.qact_gelu.register_forward_hook(hook_gelu_input)
-        # 注意：我們不再捕獲 GELU 輸出，而是使用 C-Model Reference 計算
+            result = result.astype(np.int32)
+            
+        return result, M, S
+
+    def int_add(self, lhs, rhs, lhs_s, rhs_s, out_s):
+        lhs_req, _, _ = self.int_requantize(lhs, lhs_s, out_s, np.int32)
+        rhs_req, _, _ = self.int_requantize(rhs, rhs_s, out_s, np.int32)
+        result = np.clip(lhs_req + rhs_req, -32768, 32767).astype(np.int16)
+        return result
+
+    def forward(self, x):
+        print("[1/4] Embedding ...")
+        embed_w = self._load_w("embed_conv_weight")
+        embed_bias = self._load_w("embed_conv_bias").flatten()
         
-        # Softmax: 在 Attention 中
-        # qact_attn1 輸出 -> Softmax 輸入
-        block.attn.qact_attn1.register_forward_hook(hook_softmax_input)
-        # int_softmax 輸出 -> Softmax 輸出
-        block.attn.int_softmax.register_forward_hook(hook_softmax_output)
-    
-    print(f"  ✅ 已註冊 {len(model.blocks)} 個 blocks 的 hooks")
-    print()
-    
-    # 圖片轉換
-    transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-    
-    # 載入測試圖片
-    print("[3/5] 載入測試圖片...")
-    image_path = '../data/test_image.JPEG'
-    image = Image.open(image_path).convert('RGB')
-    image_tensor = transform(image).unsqueeze(0)
-    print(f"  ✅ 圖片已載入")
-    
-    # 讀取 ground truth
-    with open('../data/test_image_info.txt', 'r') as f:
-        lines = f.readlines()
-        ground_truth = int(lines[2].split(': ')[1].strip())
-    print(f"  Ground Truth: {ground_truth}")
-    print()
-    
-    # 確保輸出目錄存在
-    output_dir = '/mnt/c/Users/Public/I-ViT/nonlinear_verification/test_vectors_golden'
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # 執行推論並收集整數 patterns
-    print("[4/5] 執行推論並收集整數測試向量...")
-    print()
-    
-    layernorm_count = 0
-    
-    with torch.no_grad():
-        # 執行一次完整推論，同時收集 LayerNorm, GELU, Softmax
-        # hooks 會自動捕獲 GELU 和 Softmax
-        x, input_scaling_factor = model.qact_input(image_tensor)
-        x, patch_scaling_factor = model.patch_embed(x, input_scaling_factor)
-        cls_tokens = model.cls_token.expand(1, -1, -1)
-        x = torch.cat((cls_tokens, x), dim=1)
-        x_pos, act_scaling_factor_pos = model.qact_pos(model.pos_embed)
-        x, x_scaling_factor = model.qact1(x, patch_scaling_factor, x_pos, act_scaling_factor_pos)
+        B, C, H, W = x.shape
+        x_patches = x.reshape(B, C, H // 16, 16, W // 16, 16).transpose(0, 2, 4, 1, 3, 5).reshape(B, 196, 3*16*16)
+        embed_w_dense = embed_w.reshape(embed_w.shape[0], -1)
         
-        # 對每個 block 收集 LayerNorm patterns
-        for block_idx, block in enumerate(model.blocks):
-            # Norm1 - 輸入是當前的 x
-            norm1_input = x.cpu().numpy().astype(np.int32)
-            
-            x_norm1, norm1_sf = block.norm1(x, x_scaling_factor)
-            x_norm1, qact1_sf = block.qact1(x_norm1, norm1_sf)
-            
-            norm1_output = x_norm1.cpu().numpy().astype(np.int32)
-            
-            # 儲存 norm1 測試向量
-            save_hex_file(norm1_input, os.path.join(output_dir, f'layernorm_input_{layernorm_count}.hex'))
-            save_hex_file(norm1_output, os.path.join(output_dir, f'layernorm_golden_{layernorm_count}.hex'))
-            
-            if layernorm_count % 5 == 0:
-                print(f"  LayerNorm {layernorm_count}: Block {block_idx} norm1")
-                print(f"    Input shape: {norm1_input.shape}, range=[{norm1_input.min()}, {norm1_input.max()}]")
-                print(f"    Output shape: {norm1_output.shape}, range=[{norm1_output.min()}, {norm1_output.max()}]")
-            
-            layernorm_count += 1
-            
-            # Attention
-            attn_output, attn_sf = block.attn(x_norm1, qact1_sf)
-            
-            # Residual 1
-            x, x_sf = block.qact2(x, x_scaling_factor, attn_output, attn_sf)
-            
-            # Norm2 - 輸入是 residual1 的輸出
-            norm2_input = x.cpu().numpy().astype(np.int32)
-            
-            x_norm2, norm2_sf = block.norm2(x, x_sf)
-            x_norm2, qact3_sf = block.qact3(x_norm2, norm2_sf)
-            
-            norm2_output = x_norm2.cpu().numpy().astype(np.int32)
-            
-            # 儲存 norm2 測試向量
-            save_hex_file(norm2_input, os.path.join(output_dir, f'layernorm_input_{layernorm_count}.hex'))
-            save_hex_file(norm2_output, os.path.join(output_dir, f'layernorm_golden_{layernorm_count}.hex'))
-            
-            if layernorm_count % 5 == 0:
-                print(f"  LayerNorm {layernorm_count}: Block {block_idx} norm2")
-                print(f"    Input shape: {norm2_input.shape}, range=[{norm2_input.min()}, {norm2_input.max()}]")
-                print(f"    Output shape: {norm2_output.shape}, range=[{norm2_output.min()}, {norm2_output.max()}]")
-            
-            layernorm_count += 1
-            
-            # MLP
-            mlp_output, mlp_sf = block.mlp(x_norm2, qact3_sf)
-            
-            # Residual 2
-            x, x_sf = block.qact4(x, x_sf, mlp_output, mlp_sf)
-            
-            x_scaling_factor = x_sf
+        emb = int_dense_kernel(x_patches, embed_w_dense, embed_bias)
         
-        # Final norm
-        final_norm_input = x.cpu().numpy().astype(np.int32)
+        emb_s0 = self._load_s("qconfig_embed_conv_output_scale")
+        emb_add_is = self._load_s("qconfig_addpos_input_scale")
+        emb_req, _, _ = self.int_requantize(emb, emb_s0, emb_add_is, np.int8)
         
-        x, x_sf = model.norm(x, x_scaling_factor)
+        cls_token = self._load_w("cls_token_weight")
+        cls_token = np.clip(np.round(cls_token / emb_add_is), -128, 127).astype(np.int8)
+        cls_token = np.repeat(cls_token, B, axis=0)
+        emb_concat = np.concatenate([cls_token, emb_req], axis=1)
         
-        final_norm_output = x.cpu().numpy().astype(np.int32)
+        pos_embed = self._load_w("pos_embed_weight")
+        pos_emb_os = self._load_s("qconfig_pos_output_scale")
+        pos_embed = np.clip(np.round(pos_embed / pos_emb_os), -128, 127).astype(np.int8)
+        emb_add_os = self._load_s("qconfig_addpos_output_scale")
         
-        # 儲存 final norm 測試向量
-        save_hex_file(final_norm_input, os.path.join(output_dir, f'layernorm_input_{layernorm_count}.hex'))
-        save_hex_file(final_norm_output, os.path.join(output_dir, f'layernorm_golden_{layernorm_count}.hex'))
+        body = self.int_add(emb_concat, pos_embed, emb_add_is, pos_emb_os, emb_add_os)
         
-        print(f"  LayerNorm {layernorm_count}: Final norm")
-        print(f"    Input shape: {final_norm_input.shape}, range=[{final_norm_input.min()}, {final_norm_input.max()}]")
-        print(f"    Output shape: {final_norm_output.shape}, range=[{final_norm_output.min()}, {final_norm_output.max()}]")
+        for i in range(12):
+            print(f"[2/4] Processing Block {i} ...")
+            body = self.forward_block(body, i)
+            
+        print("[3/4] Final Norm & Head ...")
+        norm_b = self._load_w("norm_bias")
+        norm = int_layer_norm_fixed(body, norm_b)
         
-        layernorm_count += 1
+        # Save Final Norm
+        save_hex_file_16(body, self.out_dir / f"layernorm_input_{self.ln_count}.hex")
+        save_hex_file(norm, self.out_dir / f"layernorm_golden_{self.ln_count}.hex")
+        save_hex_file(norm_b, self.out_dir / f"layernorm_bias_{self.ln_count}.hex")
         
-        # CLS token
-        x = x[:, 0]
-        x, x_sf = model.qact2(x, x_sf)
+        norm_os = self._load_s("qconfig_norm_output_scale")
+        head_is = self._load_s("qconfig_head_input_scale")
+        cls = norm[:, 0:1, :].reshape(B, -1)
+        cls_req, M_norm, S_norm = self.int_requantize(cls, norm_os, head_is, np.int8)
         
-        # Head
-        x, x_sf = model.head(x, x_sf)
+        # Since cls is just the first token, let's just save M and S
+        save_hex_file(M_norm, self.out_dir / f"layernorm_M_{self.ln_count}.hex")
+        save_hex_file(S_norm, self.out_dir / f"layernorm_S_{self.ln_count}.hex")
         
-        # 最終輸出
-        logits = x.cpu().numpy()[0]
-        pred_class = np.argmax(logits)
+        print("[4/4] Done!")
         
-        print()
-        print(f"  ✅ 推論完成")
-        print(f"    預測類別: {pred_class}")
-        print(f"    Ground Truth: {ground_truth}")
-        print(f"    正確: {pred_class == ground_truth}")
-    
-    print()
-    print(f"✅ LayerNorm: 生成 {layernorm_count} 組測試向量")
-    print(f"✅ GELU: 捕獲 {len(gelu_inputs)} 組輸入")
-    print(f"✅ Softmax: 捕獲 {len(softmax_inputs)} 組測試向量")
-    print()
-    
-    # 使用 C-Model Reference 計算 GELU 輸出
-    print("使用 C-Model Reference 計算 GELU 輸出...")
-    for i, (gelu_in, x0_int) in enumerate(zip(gelu_inputs, gelu_x0_ints)):
-        # 使用 C-Model Reference 的 int_gelu_kernel_fixed 函數
-        gelu_out = int_gelu_kernel_fixed(gelu_in, x0_int, output_bit=8, n=23)
-        gelu_outputs.append(gelu_out)
+    def forward_block(self, body, i):
+        # -------------------------------------------------------------
+        # 1. Normalization 1
+        # -------------------------------------------------------------
+        norm1_b = self._load_w(f"block_{i}_norm1_bias")
+        norm1 = int_layer_norm_fixed(body, norm1_b)
         
-        if i % 3 == 0:
-            print(f"  GELU {i}: in_range=[{gelu_in.min()}, {gelu_in.max()}], out_range=[{gelu_out.min()}, {gelu_out.max()}], x0_int={x0_int}")
-    
-    print(f"  ✅ 已計算 {len(gelu_outputs)} 組 GELU 輸出（使用 C-Model Reference）")
-    print()
-    
-    # 儲存 GELU 測試向量
-    print("儲存 GELU 測試向量...")
-    for i, (gelu_in, gelu_out) in enumerate(zip(gelu_inputs, gelu_outputs)):
-        save_hex_file(gelu_in, os.path.join(output_dir, f'gelu_input_{i}.hex'))
-        save_hex_file(gelu_out, os.path.join(output_dir, f'gelu_golden_{i}.hex'))
+        norm1_os = self._load_s(f"block_{i}_qconfig_norm1_output_scale")
+        qkv_is = self._load_s(f"block_{i}_qconfig_qkv_input_scale")
+        req1, M_norm1, S_norm1 = self.int_requantize(norm1, norm1_os, qkv_is, np.int8)
         
-        # 儲存對應的 x0_int
-        x0_int = gelu_x0_ints[i] if i < len(gelu_x0_ints) else -10
-        with open(os.path.join(output_dir, f'gelu_x0int_{i}.txt'), 'w') as f:
-            f.write(f"{x0_int}\n")
+        save_hex_file_16(body, self.out_dir / f"layernorm_input_{self.ln_count}.hex")
+        save_hex_file(norm1, self.out_dir / f"layernorm_golden_{self.ln_count}.hex")
+        save_hex_file(req1, self.out_dir / f"layernorm_requant_golden_{self.ln_count}.hex", is_int8=True)
+        save_hex_file(norm1_b, self.out_dir / f"layernorm_bias_{self.ln_count}.hex")
         
-        if i % 3 == 0:
-            nonzero_count = np.count_nonzero(gelu_out)
-            print(f"  GELU {i}: shape={gelu_in.shape}, in_range=[{gelu_in.min()}, {gelu_in.max()}], out_range=[{gelu_out.min()}, {gelu_out.max()}], non-zero={nonzero_count}/{gelu_out.size}, x0_int={x0_int}")
-    print(f"  ✅ 已儲存 {len(gelu_inputs)} 組 GELU 測試向量")
-    print()
-    
-    # 儲存 Softmax 測試向量
-    print("儲存 Softmax 測試向量...")
-    for i, (sm_in, sm_out) in enumerate(zip(softmax_inputs, softmax_outputs)):
-        save_hex_file(sm_in, os.path.join(output_dir, f'softmax_input_{i}.hex'))
-        save_hex_file(sm_out, os.path.join(output_dir, f'softmax_golden_{i}.hex'))
-        if i % 3 == 0:
-            print(f"  Softmax {i}: shape={sm_in.shape}, in_range=[{sm_in.min()}, {sm_in.max()}], out_range=[{sm_out.min()}, {sm_out.max()}]")
-    print(f"  ✅ 已儲存 {len(softmax_inputs)} 組 Softmax 測試向量")
-    print()
-    
-    
-    print("[5/5] 生成報告...")
-    with open(os.path.join(output_dir, 'README.md'), 'w') as f:
-        f.write("# 整數 Golden Patterns (從實際模型推論)\n\n")
-        f.write("**生成日期**: 2026/5/23\n")
-        f.write(f"**測試圖片**: ../data/test_image.JPEG\n")
-        f.write(f"**Ground Truth**: {ground_truth}\n")
-        f.write(f"**預測類別**: {pred_class}\n")
-        f.write(f"**預測正確**: {pred_class == ground_truth}\n\n")
-        f.write("## 測試向量\n\n")
-        f.write(f"### LayerNorm: {layernorm_count} 組\n")
-        f.write(f"- Block 0-11: 每個 block 2 組 (norm1 + norm2) = 24 組\n")
-        f.write(f"- Final norm: 1 組\n")
-        f.write(f"- 總計: 25 組\n")
-        f.write(f"- 資料形狀: (1, 197, 192) = 37,824 個 INT32 值\n\n")
-        f.write(f"### GELU: {len(gelu_inputs)} 組\n")
-        f.write(f"- Block 0-11: 每個 block 1 組 (MLP 中的 GELU)\n")
-        f.write(f"- 總計: 12 組\n")
-        f.write(f"- 資料形狀: (1, 197, 768) = 151,296 個 INT32 值\n\n")
-        f.write(f"### Softmax: {len(softmax_inputs)} 組\n")
-        f.write(f"- Block 0-11: 每個 block 1 組 (Attention 中的 Softmax)\n")
-        f.write(f"- 總計: 12 組\n")
-        f.write(f"- 資料形狀: (1, 3, 197, 197) = 116,427 個 INT32 值\n\n")
-        f.write("## 檔案格式\n\n")
-        f.write("### LayerNorm\n")
-        f.write("- `layernorm_input_X.hex`: LayerNorm 輸入（INT32, hex 格式）\n")
-        f.write("- `layernorm_golden_X.hex`: LayerNorm 輸出（INT32, hex 格式）\n\n")
-        f.write("### GELU\n")
-        f.write("- `gelu_input_X.hex`: GELU 輸入（INT32, hex 格式）\n")
-        f.write("- `gelu_golden_X.hex`: GELU 輸出（INT32, hex 格式）\n\n")
-        f.write("### Softmax\n")
-        f.write("- `softmax_input_X.hex`: Softmax 輸入（INT32, hex 格式）\n")
-        f.write("- `softmax_golden_X.hex`: Softmax 輸出（INT32, hex 格式）\n\n")
-        f.write("## 資料來源\n\n")
-        f.write("這些測試向量來自實際模型推論的整數中間結果：\n")
-        f.write("- 使用 PyTorch 量化模型直接推論\n")
-        f.write("- 使用 forward hooks 捕獲每個模組的輸入和輸出\n")
-        f.write("- 所有數據都是 INT32 整數格式\n\n")
-        f.write("## 使用方法\n\n")
-        f.write("這些測試向量可以直接用於 RTL 驗證，確保 RTL 實現與 PyTorch 模型完全一致。\n")
-    
-    print("  ✅ 報告已保存")
-    print()
-    
-    print("=" * 70)
-    print("✅✅✅ 整數測試向量生成完成！")
-    print("=" * 70)
-    print()
-    print(f"測試向量位置: {output_dir}/")
-    print(f"  - LayerNorm: layernorm_input_0.hex ~ layernorm_input_{layernorm_count-1}.hex")
-    print(f"  - GELU: gelu_input_0.hex ~ gelu_input_{len(gelu_inputs)-1}.hex")
-    print(f"  - Softmax: softmax_input_0.hex ~ softmax_input_{len(softmax_inputs)-1}.hex")
-    print()
+        M_norm1_full = np.full(192, M_norm1.item()) if M_norm1.size == 1 else M_norm1
+        S_norm1_full = np.full(192, S_norm1.item()) if S_norm1.size == 1 else S_norm1
+        save_hex_file(M_norm1_full, self.out_dir / f"layernorm_M_{self.ln_count}.hex")
+        save_hex_file(S_norm1_full, self.out_dir / f"layernorm_S_{self.ln_count}.hex")
+        self.ln_count += 1
+        
+        # -------------------------------------------------------------
+        # 2. QKV & MatMul1 & Softmax
+        # -------------------------------------------------------------
+        qkv_w = self._load_w(f"block_{i}_attn_qkv_weight")
+        qkv_b = self._load_w(f"block_{i}_attn_qkv_bias")
+        qkv = int_dense_kernel(req1, qkv_w, qkv_b)
+        
+        qkv_os = self._load_s(f"block_{i}_qconfig_qkv_output_scale")
+        mm1_is = self._load_s(f"block_{i}_qconfig_matmul_1_input_scale")
+        req2, _, _ = self.int_requantize(qkv, qkv_os, mm1_is, np.int8)
+        
+        B, N, C3 = req2.shape
+        C_h = C3 // 3 // 3
+        qkv_reshape = req2.reshape(B, N, 3, 3, C_h).transpose(2, 0, 3, 1, 4)
+        q, k, v = qkv_reshape[0], qkv_reshape[1], qkv_reshape[2]
+        
+        attn = int_matmul_kernel(q, k)
+        
+        attn_os = self._load_s(f"block_{i}_qconfig_matmul_1_output_scale")
+        sm_is = self._load_s(f"block_{i}_qconfig_softmax_input_scale")
+        req3, _, _ = self.int_requantize(attn, attn_os * 0.125, sm_is, np.int8)
+        
+        sm_scale_val = sm_is[0] if getattr(sm_is, 'size', 0) > 1 else (sm_is.item() if hasattr(sm_is, 'item') else sm_is)
+        sm_x0_int = int(np.floor(-np.log(2) / float(sm_scale_val)))
+        
+        # Save Softmax vectors
+        save_hex_file(req3, self.out_dir / f"softmax_input_{i}.hex", is_int8=True)
+        save_hex_file(np.array([sm_x0_int], dtype=np.int32), self.out_dir / f"softmax_x0_{i}.hex")
+        
+        attn_soft = int_softmax_kernel_fixed(req3, sm_x0_int)
+        
+        save_hex_file(attn_soft, self.out_dir / f"softmax_golden_{i}.hex")
+        
+        # -------------------------------------------------------------
+        # 3. MatMul2 & Proj & Add1
+        # -------------------------------------------------------------
+        sm_r = attn_soft.reshape(B * 3, N, N)
+        v_transpose = v.transpose(0, 1, 3, 2)
+        attn2 = int_matmul_kernel(attn_soft, v_transpose) 
+        attn2 = attn2.transpose(0, 2, 1, 3).reshape(1, 197, 192)
+        
+        mm2_os = self._load_s(f"block_{i}_qconfig_matmul_2_output_scale")
+        proj_is = self._load_s(f"block_{i}_qconfig_proj_input_scale")
+        req5, _, _ = self.int_requantize(attn2, mm2_os, proj_is, np.int8)
+        
+        proj_w = self._load_w(f"block_{i}_attn_proj_weight")
+        proj_b = self._load_w(f"block_{i}_attn_proj_bias")
+        proj = int_dense_kernel(req5, proj_w, proj_b)
+        
+        proj_os = self._load_s(f"block_{i}_qconfig_proj_output_scale")
+        body_s = self._load_s(f"block_{i-1}_qconfig_add2_output_scale") if i > 0 else self._load_s("qconfig_addpos_output_scale")
+        add1_os = self._load_s(f"block_{i}_qconfig_add1_output_scale")
+        add1 = self.int_add(proj, body, proj_os, body_s, add1_os)
+        
+        # -------------------------------------------------------------
+        # 4. Normalization 2
+        # -------------------------------------------------------------
+        norm2_b = self._load_w(f"block_{i}_norm2_bias")
+        norm2 = int_layer_norm_fixed(add1, norm2_b)
+        
+        norm2_os = self._load_s(f"block_{i}_qconfig_norm2_output_scale")
+        fc1_is = self._load_s(f"block_{i}_qconfig_fc1_input_scale")
+        req8, M_norm2, S_norm2 = self.int_requantize(norm2, norm2_os, fc1_is, np.int8)
+        
+        save_hex_file_16(add1, self.out_dir / f"layernorm_input_{self.ln_count}.hex")
+        save_hex_file(norm2, self.out_dir / f"layernorm_golden_{self.ln_count}.hex")
+        save_hex_file(req8, self.out_dir / f"layernorm_requant_golden_{self.ln_count}.hex", is_int8=True)
+        save_hex_file(norm2_b, self.out_dir / f"layernorm_bias_{self.ln_count}.hex")
+        
+        M_norm2_full = np.full(192, M_norm2.item()) if M_norm2.size == 1 else M_norm2
+        S_norm2_full = np.full(192, S_norm2.item()) if S_norm2.size == 1 else S_norm2
+        save_hex_file(M_norm2_full, self.out_dir / f"layernorm_M_{self.ln_count}.hex")
+        save_hex_file(S_norm2_full, self.out_dir / f"layernorm_S_{self.ln_count}.hex")
+        self.ln_count += 1
+        
+        # -------------------------------------------------------------
+        # 5. FC1 & GELU
+        # -------------------------------------------------------------
+        fc1_w = self._load_w(f"block_{i}_mlp_fc1_weight")
+        fc1_b = self._load_w(f"block_{i}_mlp_fc1_bias")
+        fc1 = int_dense_kernel(req8, fc1_w, fc1_b)
+        
+        fc1_os = self._load_s(f"block_{i}_qconfig_fc1_output_scale")
+        gelu_is = self._load_s(f"block_{i}_qconfig_gelu_input_scale")
+        
+        # THIS is the input to GELU!
+        req9, _, _ = self.int_requantize(fc1, fc1_os, gelu_is, np.int8)
+        save_hex_file(req9, self.out_dir / f"gelu_input_{i}.hex", is_int8=True)
+        
+        gelu_scale_val = gelu_is[0] if getattr(gelu_is, 'size', 0) > 1 else (gelu_is.item() if hasattr(gelu_is, 'item') else gelu_is)
+        x0_int = int(np.round(-3.0 / float(gelu_scale_val)))
+        save_hex_file(np.array([x0_int], dtype=np.int32), self.out_dir / f"gelu_x0_{i}.hex")
+        
+        act = int_gelu_kernel_fixed(req9, x0_int)
+        save_hex_file(act, self.out_dir / f"gelu_golden_{i}.hex")
+        
+        gelu_os = self._load_s(f"block_{i}_qconfig_gelu_output_scale")
+        fc2_is = self._load_s(f"block_{i}_qconfig_fc2_input_scale")
+        
+        req10, M_gelu, S_gelu = self.int_requantize(act, gelu_os, fc2_is, np.int8)
+        save_hex_file(req10, self.out_dir / f"gelu_requant_golden_{i}.hex", is_int8=True)
+        
+        M_gelu_full = np.full(768, M_gelu.item()) if M_gelu.size == 1 else M_gelu
+        S_gelu_full = np.full(768, S_gelu.item()) if S_gelu.size == 1 else S_gelu
+        save_hex_file(M_gelu_full, self.out_dir / f"gelu_M_{i}.hex")
+        save_hex_file(S_gelu_full, self.out_dir / f"gelu_S_{i}.hex")
+        
+        # -------------------------------------------------------------
+        # 6. FC2 & Add2
+        # -------------------------------------------------------------
+        fc2_w = self._load_w(f"block_{i}_mlp_fc2_weight")
+        fc2_b = self._load_w(f"block_{i}_mlp_fc2_bias")
+        fc2 = int_dense_kernel(req10, fc2_w, fc2_b)
+        
+        fc2_os = self._load_s(f"block_{i}_qconfig_fc2_output_scale")
+        add2_os = self._load_s(f"block_{i}_qconfig_add2_output_scale")
+        add2 = self.int_add(fc2, add1, fc2_os, add1_os, add2_os)
+        
+        return add2
 
 if __name__ == "__main__":
-    main()
+    print("===========================================================")
+    print("使用 Pure Numpy C-Model 生成端到端推論測試向量")
+    print("===========================================================")
+    
+    tvm_dir = os.path.join(ROOT_DIR, 'patterns_tvm')
+    out_dir = '/mnt/c/Users/Public/I-ViT_rtl/nonlinear_verification/test_vectors_golden'
+    
+    os.makedirs(out_dir, exist_ok=True)
+    
+    model = ExtractorCModel(tvm_dir, out_dir)
+    
+    print("載入測試圖片輸入 (input_int8.npy)...")
+    in_val = np.load(os.path.join(tvm_dir, "input", "input_int8.npy"))
+    
+    print("開始端到端推論並提取 hex 向量...")
+    model.forward(in_val)
+    print(f"提取完成！測試向量已儲存至 {out_dir}")
